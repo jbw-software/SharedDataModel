@@ -22,7 +22,7 @@ import javax.swing.AbstractListModel;
 public class AbstractUniqueIterableDataModel<E> extends AbstractListModel<E> implements Iterable<E> {
 
     private static final long serialVersionUID = -3206515347886083915L;
-    private final Set<E> objects;
+    private Set<E> objects;
     private boolean enabled;
     private int sizeBeforeDisabled;
 
@@ -274,6 +274,7 @@ public class AbstractUniqueIterableDataModel<E> extends AbstractListModel<E> imp
             }
             currentIndex++;
         }
+        this.objects = aNewSet;
         fireIntervalAdded(this, index, index);
     }
 
