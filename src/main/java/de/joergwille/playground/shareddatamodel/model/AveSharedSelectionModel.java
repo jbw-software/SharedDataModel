@@ -42,7 +42,7 @@ public class AveSharedSelectionModel<E> extends AbstractUniqueIterableDataModel<
     @SuppressWarnings("unchecked")
     public boolean update(List<E> newItems) {
         // get a copy of the current elements in the set as an ArrayList
-        final List currentItems = super.toList();
+        final List<E> currentItems = super.toList();
 
         // check if updated list is different from original list or no listeners are registered.
         if (this.updateListeners.isEmpty() || (newItems.size() == currentItems.size() && newItems.containsAll(currentItems) && currentItems.containsAll(newItems) )) {

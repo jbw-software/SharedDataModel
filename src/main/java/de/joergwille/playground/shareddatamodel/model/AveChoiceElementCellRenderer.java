@@ -9,20 +9,21 @@ import javax.swing.table.TableCellRenderer;
  *
  * @author joerg
  */
-public class AveComboBoxCellRenderer extends AveChoiceElement implements TableCellRenderer {
+public class AveChoiceElementCellRenderer extends AveChoiceElement implements TableCellRenderer {
 
     private static final class InstanceHolder {
 
-        static final AveComboBoxCellRenderer INSTANCE = new AveComboBoxCellRenderer();
+        static final AveChoiceElementCellRenderer INSTANCE = new AveChoiceElementCellRenderer();
     }
 
-    private AveComboBoxCellRenderer() {}
+    private AveChoiceElementCellRenderer() {}
 
-    public static AveComboBoxCellRenderer getInstance() {
+    public static AveChoiceElementCellRenderer getInstance() {
         return InstanceHolder.INSTANCE;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column) {
         if (!(value instanceof AveUpdatableSelection)) {

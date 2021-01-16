@@ -1,7 +1,7 @@
 package de.joergwille.playground.shareddatamodel;
 
-import de.joergwille.playground.shareddatamodel.model.AveComboBoxCellEditor;
-import de.joergwille.playground.shareddatamodel.model.AveComboBoxCellRenderer;
+import de.joergwille.playground.shareddatamodel.model.AveChoiceElementCellEditor;
+import de.joergwille.playground.shareddatamodel.model.AveChoiceElementCellRenderer;
 import de.joergwille.playground.shareddatamodel.model.AveSharedComboBoxModel;
 import de.joergwille.playground.shareddatamodel.model.AveSharedSelectionModel;
 import de.joergwille.playground.shareddatamodel.model.AveTableModel;
@@ -32,7 +32,7 @@ public class SharedDataModelUi extends JFrame {
     private static final String[] items = {"None", "Spring", "Summer", "Fall", "Winter"};
     private static final String[] updatedItems = {"None", "Frühling", "Sommer", "Winter", "Herbst"};
     //The one & only sharedDataModel for both JComboBoxes
-    final AveSharedSelectionModel sharedDataModel;
+    final AveSharedSelectionModel<String> sharedDataModel;
 
     public SharedDataModelUi() {
         super("SharedDataModel Test");
@@ -40,7 +40,7 @@ public class SharedDataModelUi extends JFrame {
         super.setDefaultCloseOperation(EXIT_ON_CLOSE);
         super.setLocationRelativeTo(null);
 
-        this.sharedDataModel = new AveSharedSelectionModel();
+        this.sharedDataModel = new AveSharedSelectionModel<>();
         for (String item : items) {
             sharedDataModel.addElement(item);
         }
@@ -113,7 +113,7 @@ public class SharedDataModelUi extends JFrame {
                     if (lastSelectedjComboItem[index] != null) {
                         String rename = JOptionPane.showInputDialog("Rename " + lastSelectedjComboItem[index]);
                         if (rename != null && !rename.isEmpty()) {
-                            final List sharedDataModelAsList = sharedDataModel.toList();
+                            final List<String> sharedDataModelAsList = sharedDataModel.toList();
                             int itemIndex = sharedDataModel.getIndexOf(lastSelectedjComboItem[index]);
                             sharedDataModelAsList.set(itemIndex, rename);
                             sharedDataModel.update(sharedDataModelAsList);
@@ -156,15 +156,15 @@ public class SharedDataModelUi extends JFrame {
             {"0", "null"}, {"1", "eins"}, {"2", "zwei"}, {"3", "drei"}, {"4", "vier"}
         };
 
-        AveSharedSelectionModel choiceData = new AveSharedSelectionModel(new String[]{"None", "A", "B", "C", "D"});
+        AveSharedSelectionModel<String> choiceData = new AveSharedSelectionModel<>(new String[]{"None", "A", "B", "C", "D"});
 
         final AveTableRowEntry[] tableData = new AveTableRowEntry[stringData.length];
-        final Class[] sequence = new Class[]{String.class, AveUpdatableSelection.class, String.class, AveUpdatableSelection.class};
+        final Class<?>[] sequence = new Class<?>[]{String.class, AveUpdatableSelection.class, String.class, AveUpdatableSelection.class};
 
         for (int i = 0; i < tableData.length; i++) {
-            AveUpdatableSelection comboBoxData1 = new AveUpdatableSelection(choiceData, null, false, true);
-            AveUpdatableSelection comboBoxData2 = new AveUpdatableSelection(this.sharedDataModel, null, false, true);
-            tableData[i] = new AveTableRowEntry(sequence, stringData[i], new AveUpdatableSelection[]{comboBoxData1, comboBoxData2});
+            AveUpdatableSelection<String> comboBoxData1 = new AveUpdatableSelection<>(choiceData, null, false, true);
+            AveUpdatableSelection<String> comboBoxData2 = new AveUpdatableSelection<>(this.sharedDataModel, null, false, true);
+            tableData[i] = new AveTableRowEntry(sequence, stringData[i], new AveUpdatableSelection<?>[]{comboBoxData1, comboBoxData2});
         }
 
         final AveTableModel tableModel = new AveTableModel(columnNames);
@@ -174,8 +174,8 @@ public class SharedDataModelUi extends JFrame {
 
         final JTable table = new JTable(tableModel);
         table.setRowHeight(40);
-        table.setDefaultRenderer(AveUpdatableSelection.class, AveComboBoxCellRenderer.getInstance());
-        table.setDefaultEditor(AveUpdatableSelection.class, AveComboBoxCellEditor.getInstance());
+        table.setDefaultRenderer(AveUpdatableSelection.class, AveChoiceElementCellRenderer.getInstance());
+        table.setDefaultEditor(AveUpdatableSelection.class, AveChoiceElementCellEditor.getInstance());
 
         comboPanel.add(table);
     }

@@ -15,6 +15,8 @@ import javax.swing.JComboBox;
  */
 public class AveChoiceElement extends JComboBox<String> {
 
+    private static final long serialVersionUID = 1L;
+
     public AveChoiceElement() {
         super();
         setOpaque(true);

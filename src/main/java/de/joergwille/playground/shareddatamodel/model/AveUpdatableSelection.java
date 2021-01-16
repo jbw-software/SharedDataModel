@@ -8,7 +8,7 @@ import java.util.List;
  * @author joerg
  * @param <E>
  */
-public class AveUpdatableSelection<E> implements UpdateListener, Serializable {
+public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable {
 
     private static final long serialVersionUID = -2417589986708592620L;
     protected final AveSharedSelectionModel<E> sharedModel;
@@ -73,7 +73,7 @@ public class AveUpdatableSelection<E> implements UpdateListener, Serializable {
     }
     
     @Override
-    public void updating(State state, List newItems, List currentItems) {
+    public void updating(State state, List<E> newItems, List<E> currentItems) {
         if (UpdateListener.State.AFTER_UPDATE.equals(state)) {
             Object newSelection = null;
             int indexInCurrentItems = currentItems.indexOf(this.selectedItem);
@@ -101,6 +101,7 @@ public class AveUpdatableSelection<E> implements UpdateListener, Serializable {
      * @param anObject The selected value or null for no selection.
      */
     // implements javax.swing.ComboBoxModel
+    @SuppressWarnings("unchecked")
     public void setSelectedItem(Object anObject) {
         this.setSelected((E) anObject);
     }

@@ -16,7 +16,7 @@ import javax.swing.event.ListDataListener;
  * @param <E>
  */
 public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
-        implements MutableComboBoxModel<E>, ListModel<E>, ListDataListener, UpdateListener, Serializable {
+        implements MutableComboBoxModel<E>, ListModel<E>, ListDataListener, UpdateListener<E>, Serializable {
 
     private static final long serialVersionUID = -3894432749074287792L;
     final protected EventListenerList listenerList; // copied from javax.swing.AbstractListModel
@@ -168,7 +168,7 @@ public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
     }
 
     @Override
-    public void updating(State state, List newItems, List currentItems) {
+    public void updating(State state, List<E> newItems, List<E> currentItems) {
 
         if (UpdateListener.State.BEFORE_UPDATE.equals(state)) {
             int selectedObjIndex = -1;
