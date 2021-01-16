@@ -3,7 +3,7 @@ package de.joergwille.playground.shareddatamodel;
 import de.joergwille.playground.shareddatamodel.model.AveChoiceElementCellEditor;
 import de.joergwille.playground.shareddatamodel.model.AveChoiceElementCellRenderer;
 import de.joergwille.playground.shareddatamodel.model.AveSharedComboBoxModel;
-import de.joergwille.playground.shareddatamodel.model.AveSharedSelectionModel;
+import de.joergwille.playground.shareddatamodel.model.AveSharedDataModel;
 import de.joergwille.playground.shareddatamodel.model.AveTableModel;
 import de.joergwille.playground.shareddatamodel.model.AveTableRowEntry;
 import de.joergwille.playground.shareddatamodel.model.AveUpdatableSelection;
@@ -32,7 +32,7 @@ public class SharedDataModelUi extends JFrame {
     private static final String[] items = {"None", "Spring", "Summer", "Fall", "Winter"};
     private static final String[] updatedItems = {"None", "Frühling", "Sommer", "Winter", "Herbst"};
     //The one & only sharedDataModel for both JComboBoxes
-    final AveSharedSelectionModel<String> sharedDataModel;
+    final AveSharedDataModel<String> sharedDataModel;
 
     public SharedDataModelUi() {
         super("SharedDataModel Test");
@@ -40,7 +40,7 @@ public class SharedDataModelUi extends JFrame {
         super.setDefaultCloseOperation(EXIT_ON_CLOSE);
         super.setLocationRelativeTo(null);
 
-        this.sharedDataModel = new AveSharedSelectionModel<>();
+        this.sharedDataModel = new AveSharedDataModel<>();
         for (String item : items) {
             sharedDataModel.addElement(item);
         }
@@ -156,7 +156,7 @@ public class SharedDataModelUi extends JFrame {
             {"0", "null"}, {"1", "eins"}, {"2", "zwei"}, {"3", "drei"}, {"4", "vier"}
         };
 
-        AveSharedSelectionModel<String> choiceData = new AveSharedSelectionModel<>(new String[]{"None", "A", "B", "C", "D"});
+        AveSharedDataModel<String> choiceData = new AveSharedDataModel<>(new String[]{"None", "A", "B", "C", "D"});
 
         final AveTableRowEntry[] tableData = new AveTableRowEntry[stringData.length];
         final Class<?>[] sequence = new Class<?>[]{String.class, AveUpdatableSelection.class, String.class, AveUpdatableSelection.class};

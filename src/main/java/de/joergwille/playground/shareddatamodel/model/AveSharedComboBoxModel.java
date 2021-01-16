@@ -11,12 +11,19 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 /**
+ * AveSharedComboBoxModel is a replacement for {@link DefaultComboBoxModel} as
+ * data model for <code>JComboBox</code>. It uses {@link AveSharedDataModel} as
+ * the actual container for the data and extends from
+ * {@link AveUpdatableSelection} for storing the selected item of a
+ * <code>JComboBox</code>. It implements {@link UpdateListener} to react on
+ * changes on the data.
  *
- * @author joerg
+ * @author willejoerg
  * @param <E>
  */
 public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
-        implements MutableComboBoxModel<E>, ListModel<E>, ListDataListener, UpdateListener<E>, Serializable {
+        implements MutableComboBoxModel<E>, ListModel<E>, ListDataListener,
+        UpdateListener<E>, Serializable {
 
     private static final long serialVersionUID = -3894432749074287792L;
     final protected EventListenerList listenerList; // copied from javax.swing.AbstractListModel
@@ -24,11 +31,25 @@ public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
     private boolean forceDeselectionOnIndexChange;
     private int selectedIndexBackup;
 
-    public AveSharedComboBoxModel(AveSharedSelectionModel<E> sharedModel) {
+    /**
+     *
+     * @param sharedModel The {@link AveSharedDataModel} which actually holds
+     * items.
+     */
+    public AveSharedComboBoxModel(AveSharedDataModel<E> sharedModel) {
+        this(sharedModel, false);
+    }
+
+    public AveSharedComboBoxModel(AveSharedDataModel<E> sharedModel, boolean allowOneMutation) {
+        this(sharedModel, false, true);
+    }
+
+    public AveSharedComboBoxModel(AveSharedDataModel<E> sharedModel, boolean allowOneMutation,
+            boolean forceDeselectionOnIndexChange) {
         super(sharedModel);
+        this.allowOneMutation = allowOneMutation;
+        this.forceDeselectionOnIndexChange = forceDeselectionOnIndexChange;
         this.listenerList = new EventListenerList();
-        this.allowOneMutation = false;
-        this.forceDeselectionOnIndexChange = true;
     }
 
     /**
@@ -109,7 +130,8 @@ public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
 
     public boolean remove(Object obj) {
         boolean result = super.sharedModel.remove(obj);
-        Object newSelected = Objects.equals(obj, super.getSelectedItem()) ? null : super.getSelectedItem();
+        Object newSelected = Objects.equals(obj, super.getSelectedItem())
+                ? null : super.getSelectedItem();
         setSelectedItem(newSelected);
         return result;
     }
@@ -175,13 +197,16 @@ public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
             Object selectedObj = this.getSelectedItem();
 
             if (selectedObj != null) {
-                // If only the currently selected item changed, then this is a "rename case" and the new item with the same index gets selected.
+                // If only the currently selected item changed, then this is a
+                // "rename case" and the new item with the same index gets selected.
                 // This is a wanted behaviour and be enabled with allowOneMutation == true.
                 if (this.allowOneMutation) {
-                    selectedObjIndex = isOnlyOneMutation(newItems, currentItems) ? currentItems.indexOf(selectedObj) : -1;
+                    selectedObjIndex = isOnlyOneMutation(newItems, currentItems)
+                            ? currentItems.indexOf(selectedObj) : -1;
                 }
 
-                // Force a deselection of the item since the index has changed but the selected item remained constant.
+                // Force a deselection of the item since the index has changed but
+                // the selected item remained constant.
                 // Without the deselection no ItemChangeEvent would be fired.
                 if (this.forceDeselectionOnIndexChange == true
                         && super.isMatchSelectionByString() == true
@@ -358,5 +383,5 @@ public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
     public <T extends EventListener> T[] getListeners(Class<T> listenerType) {
         return listenerList.getListeners(listenerType);
     }
-    
+
 }

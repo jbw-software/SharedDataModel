@@ -8,8 +8,13 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 
 /**
+ * AveChoiceElementCellEditor A {@link TableCellEditor} for
+ * {@link AveUpdatableSelection} data coloumns. {@link AveUpdatableSelection} is
+ * used to store the selected item of a <code>JComboBox</code>.
+ * <code>AveChoiceElementCellEditor</code> uses a singleton pattern since a
+ * single instance can be reused for multiple <code>JComboBox</code> instances.
  *
- * @author joerg
+ * @author willejoerg
  */
 public class AveChoiceElementCellEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
 

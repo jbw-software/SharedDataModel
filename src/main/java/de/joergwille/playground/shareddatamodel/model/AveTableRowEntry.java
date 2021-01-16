@@ -1,18 +1,25 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.joergwille.playground.shareddatamodel.model;
 
 /**
+ * AveTableRowEntry The data model to store the data for one row in a
+ * {@link JTable}. It stores the data for <code>String</code> and
+ * <code>JComboBox</code> columns.
  *
- * @author joerg
+ * @author willejoerg
  */
 public class AveTableRowEntry {
 
     final Object[] rowData;
 
+    /**
+     *
+     * @param classes An array of <code>Class</code> to define the sequence in
+     * which the <code>values</code> and <code>comboBoxValues</code> are stored
+     * in the row.
+     * @param values An array of <code>String</code> for String columns.
+     * @param comboBoxValues An array of <code>AveUpdatableSelection</code> for
+     * JComboBox columns.
+     */
     public AveTableRowEntry(Class<?>[] classes, String[] values, AveUpdatableSelection<?>[] comboBoxValues) {
 
         if (classes.length != values.length + comboBoxValues.length) {
@@ -23,7 +30,7 @@ public class AveTableRowEntry {
         for (Class<?> clazz : classes) {
             if (clazz.equals(AveUpdatableSelection.class)) {
                 rowData[c++] = comboBoxValues[m++];
-            } else if (clazz.equals(String.class)){
+            } else if (clazz.equals(String.class)) {
                 rowData[c++] = values[s++];
             } else {
                 throw new IllegalArgumentException("The types specified in the 'classes' array is invalid.");

@@ -16,7 +16,6 @@ import javax.swing.AbstractListModel;
  *
  * @param <E> the type of the elements of this model
  *
- *
  * @author willejoerg
  */
 public class AbstractUniqueIterableDataModel<E> extends AbstractListModel<E> implements Iterable<E> {
@@ -262,7 +261,7 @@ public class AbstractUniqueIterableDataModel<E> extends AbstractListModel<E> imp
         }
         int initialCapacity = AbstractUniqueIterableDataModel.nearestPowerOfTwo(size() + 1);
         final Set<E> aNewSet = new LinkedHashSet<>(initialCapacity);
-        
+
         // First copy all existing items before the new element, then add the new element
         // and then complete with the rest of the existing elements.
         Iterator<E> iterator = this.objects.iterator();
@@ -343,15 +342,16 @@ public class AbstractUniqueIterableDataModel<E> extends AbstractListModel<E> imp
      * Returns a new <code>ArrayList</code> containing all of the elements in
      * correct order as added to the <code>Set</code>.
      *
-     * @return a <code>ArrayList</code> containing the elements of the <code>Set</code>
+     * @return a <code>ArrayList</code> containing the elements of the
+     * <code>Set</code>
      */
     public List<E> toList() {
         return new ArrayList<>(this.objects);
     }
 
     /**
-     * Returns a new array containing all of the elements in
-     * correct order as added to the <code>Set</code>.
+     * Returns a new array containing all of the elements in correct order as
+     * added to the <code>Set</code>.
      *
      * @return an array containing the elements of the <code>Set</code>
      */

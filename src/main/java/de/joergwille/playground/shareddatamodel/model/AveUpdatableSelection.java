@@ -4,31 +4,43 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
+ * AveUpdatableSelection is the smallest common denominators for storing a
+ * selection of a <code>JComboBox</code>. {@link AveSharedComboBoxModel} extends
+ * from it to individually store the selection for each instance. In also is
+ * being used as the selection model for a <code>JComboBox</code> within a
+ * <code>JTabel</code>. It has a reference to {@link AveSharedDataModel}. It
+ * implements {@link UpdateListener} to react on changes for the
+ * <code>selectedItem</code>.
  *
- * @author joerg
+ * @author willejoerg
  * @param <E>
  */
 public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable {
 
     private static final long serialVersionUID = -2417589986708592620L;
-    protected final AveSharedSelectionModel<E> sharedModel;
+    protected final AveSharedDataModel<E> sharedModel;
     private Object selectedItem;
     private boolean allowEmptySelection;
     private boolean matchSelectionByString;
 
-    public AveUpdatableSelection(AveSharedSelectionModel<E> sharedModel) {
+    /**
+     *
+     * @param sharedModel A reference to {@link AveSharedDataModel} of which the
+     * <code>selectedItem</code> is a member.
+     */
+    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel) {
         this(sharedModel, null);
     }
 
-    public AveUpdatableSelection(AveSharedSelectionModel<E> sharedModel, E selected) {
+    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, E selected) {
         this(sharedModel, null, true);
     }
 
-    public AveUpdatableSelection(AveSharedSelectionModel<E> sharedModel, E selected, boolean allowEmptySelection) {
+    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, E selected, boolean allowEmptySelection) {
         this(sharedModel, null, allowEmptySelection, false);
     }
 
-    public AveUpdatableSelection(AveSharedSelectionModel<E> sharedModel, E selected, boolean allowEmptySelection, boolean matchSelectionByString) {
+    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, E selected, boolean allowEmptySelection, boolean matchSelectionByString) {
         this.sharedModel = sharedModel;
         this.allowEmptySelection = allowEmptySelection;
         this.matchSelectionByString = matchSelectionByString;
@@ -71,7 +83,7 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
         }
         return true;
     }
-    
+
     @Override
     public void updating(State state, List<E> newItems, List<E> currentItems) {
         if (UpdateListener.State.AFTER_UPDATE.equals(state)) {
@@ -105,9 +117,10 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
     public void setSelectedItem(Object anObject) {
         this.setSelected((E) anObject);
     }
-    
+
     /**
-     * Get the value of the selected item. The selected item may be null if {@code allowEmptySelection} is {@code true}.
+     * Get the value of the selected item. The selected item may be null if
+     * {@code allowEmptySelection} is {@code true}.
      *
      * @return The selected value or null.
      */
@@ -115,7 +128,7 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
     public Object getSelectedItem() {
         return this.selectedItem;
     }
-    
+
     public E getSelectedTypedItem() {
         Object obj = this.getSelectedItem();
         int index = this.sharedModel.getIndexOf(obj);
@@ -124,7 +137,7 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
         }
         return this.sharedModel.get(index);
     }
-    
+
     /**
      * Returns the value of the boolean {@code allowEmptySelection}. If
      * {@code false} and List is not empty, there will always be a selected
@@ -148,8 +161,8 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
     public void setAllowEmptySelection(boolean allowEmptySelection) {
         this.allowEmptySelection = allowEmptySelection;
     }
-    
-        /**
+
+    /**
      * Returns the value of the boolean {@code matchSelectionByString}. If
      * {@code true} the selection of an element is retained if arbitrary
      * elements change (mutation or modification of elements) and if there
@@ -179,7 +192,7 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
         this.matchSelectionByString = matchSelectionByString;
     }
 
-    public AveSharedSelectionModel<E> getSharedSelectionModel() {
+    public AveSharedDataModel<E> getDataSelectionModel() {
         return this.sharedModel;
     }
 

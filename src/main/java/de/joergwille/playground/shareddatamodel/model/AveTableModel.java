@@ -1,16 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.joergwille.playground.shareddatamodel.model;
 
 import java.util.Vector;
 import javax.swing.table.AbstractTableModel;
 
 /**
+ * AveTableModel
+ * A table model which uses {@link AveTableRowEntry}.
  *
- * @author joerg
+ * @author willejoerg
  */
 public class AveTableModel extends AbstractTableModel {
 

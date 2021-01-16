@@ -7,26 +7,32 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ * AveSharedDataModel is the data model which stores the values being used in
+ * <code>JComboBox</code>. It is meant to be used as a shared model together
+ * with multiple {@link AveSharedComboBoxModel}, which themselves are used as
+ * model in {@link JComboBox}. If updates occur to
+ * <code>AveSharedDataModel</code> all instances of <code>JComboBox</code> get
+ * updated.
  *
  * @author willejoerg
  * @param <E>
  */
-public class AveSharedSelectionModel<E> extends AbstractUniqueIterableDataModel<E>
+public class AveSharedDataModel<E> extends AbstractUniqueIterableDataModel<E>
         implements Serializable, UpdateObservable<E> {
 
     private static final long serialVersionUID = -3479145342764218640L;
     private List<UpdateListener<E>> updateListeners;
 
-    public AveSharedSelectionModel() {
+    public AveSharedDataModel() {
         super();
         this.updateListeners = new ArrayList<>();
     }
 
-    public AveSharedSelectionModel(final E[] initial) {
+    public AveSharedDataModel(final E[] initial) {
         this(Arrays.asList(initial));
     }
 
-    public AveSharedSelectionModel(Collection<E> initial) {
+    public AveSharedDataModel(Collection<E> initial) {
         super(initial);
         this.updateListeners = new ArrayList<>();
     }
@@ -38,14 +44,14 @@ public class AveSharedSelectionModel<E> extends AbstractUniqueIterableDataModel<
     public void removeElement(Object obj) {
         remove(obj);
     }
-    
+
     @SuppressWarnings("unchecked")
     public boolean update(List<E> newItems) {
         // get a copy of the current elements in the set as an ArrayList
         final List<E> currentItems = super.toList();
 
         // check if updated list is different from original list or no listeners are registered.
-        if (this.updateListeners.isEmpty() || (newItems.size() == currentItems.size() && newItems.containsAll(currentItems) && currentItems.containsAll(newItems) )) {
+        if (this.updateListeners.isEmpty() || (newItems.size() == currentItems.size() && newItems.containsAll(currentItems) && currentItems.containsAll(newItems))) {
             return false;
         }
         if (newItems.isEmpty()) {
@@ -56,7 +62,7 @@ public class AveSharedSelectionModel<E> extends AbstractUniqueIterableDataModel<
         this.updateListeners.forEach((updateListener) -> {
             updateListener.updating(UpdateListener.State.BEFORE_UPDATE, newItems, currentItems);
         });
-        
+
         boolean isEnabled = super.isEnabled();
         super.setEnabled(false);
         super.clear();
@@ -66,7 +72,7 @@ public class AveSharedSelectionModel<E> extends AbstractUniqueIterableDataModel<
         this.updateListeners.forEach((updateListener) -> {
             updateListener.updating(UpdateListener.State.AFTER_UPDATE, newItems, currentItems);
         });
-        
+
         return true;
     }
 
