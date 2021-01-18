@@ -2,6 +2,7 @@ package de.joergwille.playground.shareddatamodel.model;
 
 import java.awt.Component;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 
@@ -15,7 +16,7 @@ import javax.swing.table.TableCellRenderer;
  * @author willejoerg
  * @param <E>
  */
-public class AveChoiceElementCellRenderer extends AveChoiceElement implements TableCellRenderer {
+public class AveChoiceElementCellRenderer extends JComboBox<String> implements TableCellRenderer {
 
     private static final class InstanceHolder {
 

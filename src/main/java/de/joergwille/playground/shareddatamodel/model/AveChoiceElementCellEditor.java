@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractCellEditor;
+import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.table.TableCellEditor;
 
@@ -24,10 +25,10 @@ public class AveChoiceElementCellEditor extends AbstractCellEditor implements Ta
     }
 
     AveUpdatableSelection<String> updatableSelection;
-    final AveChoiceElement comboBox;
+    final JComboBox<String> comboBox;
 
     private AveChoiceElementCellEditor() {
-        this.comboBox = new AveChoiceElement();
+        this.comboBox = new JComboBox<>();
     }
 
     public static AveChoiceElementCellEditor getInstance() {
