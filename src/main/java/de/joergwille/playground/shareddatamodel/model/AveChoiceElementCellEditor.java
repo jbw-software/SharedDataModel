@@ -57,7 +57,7 @@ public class AveChoiceElementCellEditor extends AbstractCellEditor implements Ta
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        AveChoiceElement aComboBox = (AveChoiceElement) event.getSource();
+        JComboBox<?> aComboBox = (JComboBox) event.getSource();
         this.updatableSelection.setSelectedItem(aComboBox.getSelectedItem());
     }
 

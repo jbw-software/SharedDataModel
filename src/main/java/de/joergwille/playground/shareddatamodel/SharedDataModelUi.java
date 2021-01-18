@@ -21,6 +21,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -158,13 +159,31 @@ public class SharedDataModelUi extends JFrame {
 
         AveSharedDataModel<String> choiceData = new AveSharedDataModel<>(new String[]{"None", "A", "B", "C", "D"});
 
-        final AveTableRowEntry[] tableData = new AveTableRowEntry[stringData.length];
-        final Class<?>[] sequence = new Class<?>[]{String.class, AveUpdatableSelection.class, String.class, AveUpdatableSelection.class};
+        int numberOfRows = stringData.length;
+        final AveTableRowEntry[] tableData = new AveTableRowEntry[numberOfRows];
 
-        for (int i = 0; i < tableData.length; i++) {
-            AveUpdatableSelection<String> comboBoxData1 = new AveUpdatableSelection<>(choiceData, null, false, true);
-            AveUpdatableSelection<String> comboBoxData2 = new AveUpdatableSelection<>(this.sharedDataModel, null, false, true);
-            tableData[i] = new AveTableRowEntry(sequence, stringData[i], new AveUpdatableSelection<?>[]{comboBoxData1, comboBoxData2});
+//        TWO POSSIBLE WAYS TO INSTNCIATE TABEL DATA:
+//        1. USING CLASSES AND AVEUPDATABLESELECTION
+
+//        final Class<?>[] sequence = new Class<?>[]{String.class, AveUpdatableSelection.class, String.class, AveUpdatableSelection.class};
+//        for (int i = 0; i < numberOfRows; i++) {
+//            AveUpdatableSelection<String> comboBoxData1 = new AveUpdatableSelection<>(choiceData, null, false, true);
+//            AveUpdatableSelection<String> comboBoxData2 = new AveUpdatableSelection<>(this.sharedDataModel, null, false, true);
+//            tableData[i] = new AveTableRowEntry(sequence, stringData[i], new AveUpdatableSelection<?>[]{comboBoxData1, comboBoxData2});
+//        }
+        
+//        2. USING COLUMNTYPES AND CHOICEMODELS
+
+        final String[] columnTypes = new String[] {"string", "choice", "string", "choice"};
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        final AveSharedDataModel<String>[] choiceModels = new AveSharedDataModel[] {choiceData, this.sharedDataModel};
+        
+        for (int i = 0; i < numberOfRows; i++) {
+            String[] stringDataForRow = stringData[i];
+            // defaultValues is optional, but if set, then it must be same length as number of coloumns.
+            // if there are no defaultValues for ComboBoxes use 'null' for 'choice' coloumns.
+            String[] defaultValues = new String[]{stringDataForRow[0], "A", stringDataForRow[1], "Spring"};
+            tableData[i] = new AveTableRowEntry(columnTypes, choiceModels, defaultValues);
         }
 
         final AveTableModel tableModel = new AveTableModel(columnNames);

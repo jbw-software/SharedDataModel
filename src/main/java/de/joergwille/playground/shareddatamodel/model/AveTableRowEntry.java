@@ -40,7 +40,7 @@ public class AveTableRowEntry {
     public AveTableRowEntry(String[] coloumnTypes, AveSharedDataModel<String>[] choiceModels, String[] defaultValues) {
         Class<?>[] classes = columnTypesToClasses(coloumnTypes);
         
-        if (defaultValues == null && defaultValues.length > 0 && 
+        if (defaultValues != null && defaultValues.length > 0 && 
                 coloumnTypes.length > 0 && coloumnTypes.length != defaultValues.length) {
             throw new IllegalArgumentException("The array arguments 'coloumnTypes' and 'defaultValues' must have of " +
                     "the same lenght.");
@@ -63,10 +63,10 @@ public class AveTableRowEntry {
         int c = 0, m = 0;
         for (Class<?> clazz : classes) {
             if (clazz.equals(AveUpdatableSelection.class)) {
-                rowData[c] = new AveUpdatableSelection<>(choiceModels[m++], defaultValues[c], allowEmptySelection,
+                rowData[c] = new AveUpdatableSelection<>(choiceModels[m++], defaultValues != null ? defaultValues[c] : null, allowEmptySelection,
                         matchSelectionByString);
             } else if (clazz.equals(String.class)) {
-                rowData[c] = defaultValues[c] != null ? defaultValues[c] : "";
+                rowData[c] = (defaultValues != null && defaultValues[c] != null) ? defaultValues[c] : "";
             } else {
                 throw new IllegalArgumentException("The types specified in the 'classes' array is invalid.");
             }
