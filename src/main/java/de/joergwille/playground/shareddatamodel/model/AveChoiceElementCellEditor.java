@@ -51,7 +51,8 @@ public class AveChoiceElementCellEditor extends AbstractCellEditor implements Ta
         this.comboBox.setModel(new AveSharedComboBoxModel<>(this.updatableSelection.sharedModel));
         this.comboBox.setSelectedItem(this.updatableSelection.getSelectedItem());
         this.comboBox.addActionListener(this);
-        this.comboBox.setBackground(isSelected ? table.getSelectionBackground() : table.getSelectionForeground());
+        this.comboBox.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
+        this.comboBox.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
         return this.comboBox;
     }
 
