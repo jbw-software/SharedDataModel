@@ -152,7 +152,7 @@ public class SharedDataModelUi extends JFrame {
         JPanel comboPanel = new JPanel(new GridLayout(1, NUM_LISTS, 5, 5));
         rootJCombos.add(comboPanel, BorderLayout.NORTH);
 
-        String[] columnNames = {"Nummer", "Choice", "Text", "SharedChoice"};
+        String[] columnNames = {"Number", "Choice", "Text", "SharedChoice", "Checkbox"};
         String[][] stringData = {
             {"0", "null"}, {"1", "eins"}, {"2", "zwei"}, {"3", "drei"}, {"4", "vier"}
         };
@@ -165,16 +165,16 @@ public class SharedDataModelUi extends JFrame {
 //        TWO POSSIBLE WAYS TO INSTNCIATE TABEL DATA:
 //        1. USING CLASSES AND AVEUPDATABLESELECTION
 
-//        final Class<?>[] sequence = new Class<?>[]{String.class, AveUpdatableSelection.class, String.class, AveUpdatableSelection.class};
+//        final Class<?>[] sequence = new Class<?>[]{String.class, AveUpdatableSelection.class, String.class, AveUpdatableSelection.class, Boolean.class};
 //        for (int i = 0; i < numberOfRows; i++) {
 //            AveUpdatableSelection<String> comboBoxData1 = new AveUpdatableSelection<>(choiceData, null, false, true);
 //            AveUpdatableSelection<String> comboBoxData2 = new AveUpdatableSelection<>(this.sharedDataModel, null, false, true);
-//            tableData[i] = new AveTableRowEntry(sequence, stringData[i], new AveUpdatableSelection<?>[]{comboBoxData1, comboBoxData2});
+//            tableData[i] = new AveTableRowEntry(sequence, stringData[i], new Boolean[]{(i % 2 == 0)}, new AveUpdatableSelection<?>[]{comboBoxData1, comboBoxData2});
 //        }
         
 //        2. USING COLUMNTYPES AND CHOICEMODELS
 
-        final String[] columnTypes = new String[] {"string", "choice", "string", "choice"};
+        final String[] columnTypes = new String[] {"string", "choice", "string", "choice", "boolean"};
         @SuppressWarnings({"unchecked", "rawtypes"})
         final AveSharedDataModel<String>[] choiceModels = new AveSharedDataModel[] {choiceData, this.sharedDataModel};
         
@@ -182,9 +182,11 @@ public class SharedDataModelUi extends JFrame {
             String[] stringDataForRow = stringData[i];
             // defaultValues is optional, but if set, then it must be same length as number of coloumns.
             // if there are no defaultValues for ComboBoxes use 'null' for 'choice' coloumns.
-            String[] defaultValues = new String[]{stringDataForRow[0], "A", stringDataForRow[1], "Spring"};
+            String[] defaultValues = new String[]{stringDataForRow[0], choiceData.getElementAt(i), stringDataForRow[1], this.sharedDataModel.getElementAt(i), (i % 2 == 0) ? "true": "false"};
             tableData[i] = new AveTableRowEntry(columnTypes, choiceModels, defaultValues);
         }
+        
+//      END OF TABEL DATA INITIALIZATION         
 
         final AveTableModel tableModel = new AveTableModel(columnNames);
         for (AveTableRowEntry rowData : tableData) {

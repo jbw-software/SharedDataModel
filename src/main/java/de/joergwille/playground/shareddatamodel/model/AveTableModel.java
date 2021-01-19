@@ -95,6 +95,8 @@ public class AveTableModel extends AbstractTableModel {
         String stringValueAt = null;
         if (valueAt instanceof String) {
             stringValueAt = (String) valueAt;
+        } else if (valueAt instanceof Boolean) {
+            stringValueAt = ((Boolean) valueAt) ? "true" : "false";
         } else if (valueAt instanceof AveUpdatableSelection) {
             stringValueAt = (String) ((AveUpdatableSelection) valueAt).getSelectedItem();
         }

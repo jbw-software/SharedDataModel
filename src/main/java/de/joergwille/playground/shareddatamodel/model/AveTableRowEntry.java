@@ -15,20 +15,23 @@ public class AveTableRowEntry {
     public boolean matchSelectionByString = true;
 
     private static Class<?> columnTypeToClass(final String columnType) {
-        switch(columnType) {
+        switch (columnType) {
             case "string":
                 return String.class;
+            case "boolean":
+                return Boolean.class;
             case "choice":
                 return AveUpdatableSelection.class;
         }
         throw new UnsupportedOperationException("Given 'columnType' " + columnType +
-                " is not supported. The 'columnType' must be a string of 6 characters which can be mapped to a class.");
+                " is not supported. The 'columnType' must be a string which can be mapped to a class.");
     }
     
     private static Class<?>[] columnTypesToClasses(String[] coloumnTypes) {
         Class<?>[] classes = new Class<?>[coloumnTypes.length];
         for (int i = 0; i < classes.length; i++) {
-            classes[i] = columnTypeToClass(coloumnTypes[i].substring(0, 6).toLowerCase());
+            int toIndex = coloumnTypes[i].indexOf("(") > 0 ? coloumnTypes[i].indexOf("(") : coloumnTypes[i].length();
+            classes[i] = columnTypeToClass(coloumnTypes[i].substring(0, toIndex).toLowerCase());
         }
         return classes;
     }
@@ -67,6 +70,8 @@ public class AveTableRowEntry {
                         matchSelectionByString);
             } else if (clazz.equals(String.class)) {
                 rowData[c] = (defaultValues != null && defaultValues[c] != null) ? defaultValues[c] : "";
+            } else if (clazz.equals(Boolean.class)) {
+                rowData[c] = (defaultValues != null && defaultValues[c] != null) ? "true".equalsIgnoreCase(defaultValues[c].trim()) : false;
             } else {
                 throw new IllegalArgumentException("The types specified in the 'classes' array is invalid.");
             }
@@ -77,38 +82,41 @@ public class AveTableRowEntry {
     /**
      *
      * @param coloumnTypes An array of <code>String</code> to define the sequence in
-     * which the <code>values</code> and <code>comboBoxValues</code> are stored
+     * which the <code>stringValues</code> and <code>comboBoxValues</code> are stored
      * in the row.
-     * @param values An array of <code>String</code> for String columns.
+     * @param stringValues   An array of <code>String</code> for String columns.
+     * @param booleanValues  An array of <code>Boolean</code> for CheckBox columns.
      * @param comboBoxValues An array of <code>AveUpdatableSelection</code> for
      * JComboBox columns.
      */
-    public AveTableRowEntry(String[] coloumnTypes, String[] values, AveUpdatableSelection<?>[] comboBoxValues) {
-        this(columnTypesToClasses(coloumnTypes), values, comboBoxValues);
+    public AveTableRowEntry(String[] coloumnTypes, String[] stringValues, Boolean[] booleanValues, AveUpdatableSelection<?>[] comboBoxValues) {
+        this(columnTypesToClasses(coloumnTypes), stringValues, booleanValues, comboBoxValues);
     }
     
     /**
      *
      * @param classes An array of <code>Class</code> to define the sequence in
-     * which the <code>values</code> and <code>comboBoxValues</code> are stored
+     * which the <code>stringValues</code> and <code>comboBoxValues</code> are stored
      * in the row.
-     * @param values An array of <code>String</code> for String columns.
+     * @param stringValues   An array of <code>String</code> for String columns.
+     * @param booleanValues  An array of <code>Boolean</code> for CheckBox columns.
      * @param comboBoxValues An array of <code>AveUpdatableSelection</code> for
      * JComboBox columns.
      */
-    public AveTableRowEntry(Class<?>[] classes, String[] values, AveUpdatableSelection<?>[] comboBoxValues) {
-
-        if (classes.length != values.length + comboBoxValues.length) {
+    public AveTableRowEntry(Class<?>[] classes, String[] stringValues, Boolean[] booleanValues, AveUpdatableSelection<?>[] comboBoxValues) {
+        if (classes.length != stringValues.length + comboBoxValues.length + booleanValues.length) {
             throw new IndexOutOfBoundsException("The length of the 'classes' array, which specifies the sequence of " +
                     "the other given arguments, does not match the length of these arguments.");
         }
         rowData = new Object[classes.length];
-        int c = 0, s = 0, m = 0;
+        int c = 0, s = 0, b = 0, m = 0;
         for (Class<?> clazz : classes) {
             if (clazz.equals(AveUpdatableSelection.class)) {
                 rowData[c] = comboBoxValues[m++];
             } else if (clazz.equals(String.class)) {
-                rowData[c] = values[s++];
+                rowData[c] = stringValues[s++];
+            } else if (clazz.equals(Boolean.class)) {
+                rowData[c] = booleanValues[b++];
             } else {
                 throw new IllegalArgumentException("The types specified in the 'classes' array is invalid.");
             }
@@ -124,10 +132,20 @@ public class AveTableRowEntry {
         Class<?> clazz = rowData[column].getClass();
         if (clazz.equals(AveUpdatableSelection.class)) {
             ((AveUpdatableSelection) rowData[column]).setSelectedItem(aValue);
+        } else if (clazz.equals(Boolean.class)) {
+            final boolean aBooleanValue;
+            if (aValue instanceof Boolean) {
+                aBooleanValue = (Boolean) aValue;
+            } else if (aValue instanceof String) {
+                aBooleanValue = "true".equalsIgnoreCase(((String) aValue).trim());
+            } else {
+                aBooleanValue = false;
+            }
+            rowData[column] = aBooleanValue;
         } else {
             rowData[column] = aValue;
         }
-    } 
+    }
 
     public Object[] getRowData() {
         return rowData;
