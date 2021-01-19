@@ -27,39 +27,39 @@ public class AveTableRowEntry {
                 " is not supported. The 'columnType' must be a string which can be mapped to a class.");
     }
     
-    private static Class<?>[] columnTypesToClasses(String[] coloumnTypes) {
-        Class<?>[] classes = new Class<?>[coloumnTypes.length];
+    private static Class<?>[] columnTypesToClasses(String[] columnTypes) {
+        Class<?>[] classes = new Class<?>[columnTypes.length];
         for (int i = 0; i < classes.length; i++) {
-            int toIndex = coloumnTypes[i].indexOf("(") > 0 ? coloumnTypes[i].indexOf("(") : coloumnTypes[i].length();
-            classes[i] = columnTypeToClass(coloumnTypes[i].substring(0, toIndex).toLowerCase());
+            int toIndex = columnTypes[i].indexOf("(") > 0 ? columnTypes[i].indexOf("(") : columnTypes[i].length();
+            classes[i] = columnTypeToClass(columnTypes[i].substring(0, toIndex).toLowerCase());
         }
         return classes;
     }
     
-    public AveTableRowEntry(String[] coloumnTypes, AveSharedDataModel<String>[] choiceModels) {
-      this(coloumnTypes, choiceModels, null);
+    public AveTableRowEntry(String[] columnTypes, AveSharedDataModel<String>[] choiceModels) {
+      this(columnTypes, choiceModels, null);
     }
     
-    public AveTableRowEntry(String[] coloumnTypes, AveSharedDataModel<String>[] choiceModels, String[] defaultValues) {
-        Class<?>[] classes = columnTypesToClasses(coloumnTypes);
+    public AveTableRowEntry(String[] columnTypes, AveSharedDataModel<String>[] choiceModels, String[] defaultValues) {
+        Class<?>[] classes = columnTypesToClasses(columnTypes);
         
         if (defaultValues != null && defaultValues.length > 0 && 
-                coloumnTypes.length > 0 && coloumnTypes.length != defaultValues.length) {
-            throw new IllegalArgumentException("The array arguments 'coloumnTypes' and 'defaultValues' must have of " +
-                    "the same lenght.");
+                columnTypes.length > 0 && columnTypes.length != columnTypes.length) {
+            throw new IllegalArgumentException("The array arguments 'columnTypes' (" + columnTypes.length + ") "
+                    + "and 'defaultValues' (" + columnTypes.length + ") must be of the same lenght.");
         }
         
         // check if given arguments are consistent, e.g. the number of choiceModels must match the number of
-        // classes of type AveUpdatableSelection in coloumnTypes.
+        // classes of type AveUpdatableSelection in columnTypes.
         int numberOfAveUpdatableSelectionClasses = 0;
         for (Class<?> clazz : classes) {
             if (clazz.equals(AveUpdatableSelection.class)) {
                 numberOfAveUpdatableSelectionClasses++;
             }            
         }
-        if (numberOfAveUpdatableSelectionClasses != choiceModels.length) {
-            throw new IllegalArgumentException("The number of choice elements in 'coloumnTypes' does not match the " +
-                    "length of these argument 'choiceModels'.");
+        if (numberOfAveUpdatableSelectionClasses > 0 && (choiceModels == null || numberOfAveUpdatableSelectionClasses != choiceModels.length)) {
+            throw new IllegalArgumentException("The number of choice elements specified in 'columnTypes' (" + numberOfAveUpdatableSelectionClasses + ") "
+                    + "does not match the length of the given argument 'choiceModels' (" + ((choiceModels == null) ? "null" : choiceModels.length) + ").");
         }
         
         rowData = new Object[classes.length];
@@ -81,7 +81,7 @@ public class AveTableRowEntry {
     
     /**
      *
-     * @param coloumnTypes An array of <code>String</code> to define the sequence in
+     * @param columnTypes An array of <code>String</code> to define the sequence in
      * which the <code>stringValues</code> and <code>comboBoxValues</code> are stored
      * in the row.
      * @param stringValues   An array of <code>String</code> for String columns.
@@ -89,8 +89,8 @@ public class AveTableRowEntry {
      * @param comboBoxValues An array of <code>AveUpdatableSelection</code> for
      * JComboBox columns.
      */
-    public AveTableRowEntry(String[] coloumnTypes, String[] stringValues, Boolean[] booleanValues, AveUpdatableSelection<?>[] comboBoxValues) {
-        this(columnTypesToClasses(coloumnTypes), stringValues, booleanValues, comboBoxValues);
+    public AveTableRowEntry(String[] columnTypes, String[] stringValues, Boolean[] booleanValues, AveUpdatableSelection<?>[] comboBoxValues) {
+        this(columnTypesToClasses(columnTypes), stringValues, booleanValues, comboBoxValues);
     }
     
     /**

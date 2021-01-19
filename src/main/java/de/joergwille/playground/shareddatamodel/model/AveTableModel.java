@@ -38,6 +38,10 @@ public class AveTableModel extends AbstractTableModel {
      */
     @SuppressWarnings("unchecked")
     public void addRow(AveTableRowEntry tableEntry) {
+        if (columnNames.length != tableEntry.rowData.length) {
+            throw new IllegalArgumentException("The number of colums (" + tableEntry.rowData.length + ") in given 'TableRowEntry' "
+                    + "does not match with the number of columns (" + columnNames.length + ") in this 'TableModel'.");
+        }
         int currentIndex = entries.size();
         this.entries.add(tableEntry);
         fireTableRowsInserted(currentIndex, currentIndex);
