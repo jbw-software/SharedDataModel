@@ -119,6 +119,15 @@ public class AveTableRowEntry {
     public Object getRowDataForColumn(int column) {
         return rowData[column];
     }
+    
+    public void setRowDataForColumn(Object aValue, int column) {
+        Class<?> clazz = rowData[column].getClass();
+        if (clazz.equals(AveUpdatableSelection.class)) {
+            ((AveUpdatableSelection) rowData[column]).setSelectedItem(aValue);
+        } else {
+            rowData[column] = aValue;
+        }
+    } 
 
     public Object[] getRowData() {
         return rowData;
