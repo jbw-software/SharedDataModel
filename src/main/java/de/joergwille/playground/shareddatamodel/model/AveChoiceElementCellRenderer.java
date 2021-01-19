@@ -41,7 +41,9 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
         this.setModel(new DefaultComboBoxModel(updatableSelection.toArray()));
         this.setSelectedItem(updatableSelection.getSelectedItem());
 
-        setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+        this.setForeground((isSelected && hasFocus) ? table.getSelectionForeground() : table.getForeground());
+        this.setBackground((isSelected && hasFocus) ? table.getSelectionBackground() : table.getBackground());
+
         return this;
     }
 
