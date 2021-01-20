@@ -20,14 +20,28 @@ public class AveTableModel extends AbstractTableModel {
         return v;
     }
 
-    public AveTableModel(String[] columnNames) {
+    public AveTableModel(final String[] columnNames) {
         this(columnNames, 0);
     }
 
-    public AveTableModel(String[] columnNames, int rowCount) {
+    public AveTableModel(final String[] columnNames, int rowCount) {
         super();
         this.entries = newVector(rowCount);
         this.columnNames = columnNames;
+    }
+
+    public AveTableModel(final String[] columnNames, final AveTableRowEntry[] tableEntries) {
+        super();
+        this.columnNames = columnNames;
+        if (tableEntries != null && tableEntries.length > 0) {
+            this.entries = newVector(tableEntries.length);
+            for (int i = 0; i < tableEntries.length; i++) {
+                this.entries.set(i, tableEntries[i]);
+            }
+            fireTableRowsInserted(0, entries.size());
+        } else {
+            this.entries = newVector(0);
+        }
     }
 
     /**

@@ -44,9 +44,9 @@ public class AveTableRowEntry {
         Class<?>[] classes = columnTypesToClasses(columnTypes);
         
         if (defaultValues != null && defaultValues.length > 0 && 
-                columnTypes.length > 0 && columnTypes.length != columnTypes.length) {
+                columnTypes.length > 0 && columnTypes.length != defaultValues.length) {
             throw new IllegalArgumentException("The array arguments 'columnTypes' (" + columnTypes.length + ") "
-                    + "and 'defaultValues' (" + columnTypes.length + ") must be of the same lenght.");
+                    + "and 'defaultValues' (" + defaultValues.length + ") must be of the same lenght.");
         }
         
         // check if given arguments are consistent, e.g. the number of choiceModels must match the number of
