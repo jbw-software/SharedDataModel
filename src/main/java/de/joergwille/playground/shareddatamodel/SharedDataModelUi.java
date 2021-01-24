@@ -5,7 +5,6 @@ import de.joergwille.playground.shareddatamodel.model.AveChoiceElementCellEditor
 import de.joergwille.playground.shareddatamodel.model.AveChoiceElementCellRenderer;
 import de.joergwille.playground.shareddatamodel.model.AveSharedComboBoxModel;
 import de.joergwille.playground.shareddatamodel.model.AveSharedDataModel;
-import de.joergwille.playground.shareddatamodel.model.AveTableCustom;
 import de.joergwille.playground.shareddatamodel.model.AveTableModel;
 import de.joergwille.playground.shareddatamodel.model.AveTableRowEntry;
 import de.joergwille.playground.shareddatamodel.model.AveUpdatableSelection;
