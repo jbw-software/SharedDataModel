@@ -37,27 +37,9 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
         this(sharedModel, selected, true);
     }
 
-//    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, final JComboBox<E> associatedComboBox) {
-//        this(sharedModel, associatedComboBox, (E) null);
-//    }
-//
-//    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, final JComboBox<E> associatedComboBox,
-//            final E selected) {
-//        this(sharedModel, associatedComboBox, selected, true);
-//    }
-
-//    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, final E selected, boolean allowEmptySelection) {
-//        this(sharedModel, null, selected, allowEmptySelection, false);
-//    }
-
     public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, final E selected, boolean allowEmptySelection) {
         this(sharedModel, selected, allowEmptySelection, false);
     }
-
-//    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, final E selected, boolean allowEmptySelection,
-//            boolean matchSelectionByString) {
-//        this(sharedModel, null, selected, allowEmptySelection, false);
-//    }
 
     public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, final E selected, boolean allowEmptySelection,
             boolean matchSelectionByString) {

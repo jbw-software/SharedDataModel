@@ -4,15 +4,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 
 /**
  * AveSharedDataModel is the data model which stores the values being used in
- * <code>JComboBox</code>. It is meant to be used as a shared model together
+ * <i>JComboBox</i>. It is meant to be used as a shared model together
  * with multiple {@link AveSharedComboBoxModel}, which themselves are used as
  * model in {@link JComboBox}. If updates occur to
- * <code>AveSharedDataModel</code> all instances of <code>JComboBox</code> get
+ * <i>AveSharedDataModel</i> all instances of <i>JComboBox</i> get
  * updated.
  *
  * @author willejoerg
