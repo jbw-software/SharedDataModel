@@ -4,7 +4,9 @@ import java.awt.Component;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 /**
  * AveChoiceElementCellRenderer A {@link TableCellRenderer} for
@@ -14,9 +16,10 @@ import javax.swing.table.TableCellRenderer;
  * single instance can be reused for multiple <code>JComboBox</code> instances.
  *
  * @author willejoerg
- * @param <E>
  */
 public class AveChoiceElementCellRenderer extends JComboBox<String> implements TableCellRenderer {
+
+    private static final long serialVersionUID = 1L;
 
     private static final class InstanceHolder {
 
@@ -31,7 +34,7 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column) {
         if (!(value instanceof AveUpdatableSelection)) {
@@ -40,6 +43,12 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
         AveUpdatableSelection updatableSelection = (AveUpdatableSelection) value;
         this.setModel(new DefaultComboBoxModel(updatableSelection.toArray()));
 
+        // get PrototypeDisplayValue from AveUpdatableSelection amd use it to update column width.
+        this.setPrototypeDisplayValue((String)updatableSelection.getPrototypeDisplayValue());
+        final DefaultTableColumnModel colModel = (DefaultTableColumnModel) table.getColumnModel();
+        final TableColumn tableColumn = colModel.getColumn(column);
+        tableColumn.setPreferredWidth(this.getPreferredSize().width);
+        
         this.setForeground((isSelected && hasFocus) ? table.getSelectionForeground() : table.getForeground());
         this.setBackground((isSelected && hasFocus) ? table.getSelectionBackground() : table.getBackground());
 

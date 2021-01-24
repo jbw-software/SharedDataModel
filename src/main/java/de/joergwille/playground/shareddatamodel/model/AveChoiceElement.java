@@ -5,8 +5,6 @@
  */
 package de.joergwille.playground.shareddatamodel.model;
 
-import java.awt.Dimension;
-import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 
 /**
@@ -18,20 +16,18 @@ public class AveChoiceElement extends JComboBox<String> {
     private static final long serialVersionUID = 1L;
 
     public AveChoiceElement() {
-        super();
-        setOpaque(true);
-        System.out.println("AveChoiceElement Constructor called.");
+        this(null);
     }
 
-    public AveChoiceElement(ComboBoxModel<String> model) {
+    public AveChoiceElement(AveSharedComboBoxModel<String> model) {
         super(model);
         setOpaque(true);
         System.out.println("AveChoiceElement Constructor called.");
     }
-
+    
     @Override
-    public Dimension getPreferredSize() {
-        Dimension d = super.getPreferredSize();
-        return new Dimension(40, d.height);
+    public void setPrototypeDisplayValue(String prototypeDisplayValue) {
+        super.setPrototypeDisplayValue(prototypeDisplayValue);
+        System.out.println("PrototypeDisplayValue of 'AveChoiceElement' is set to : " + prototypeDisplayValue);        
     }
 }

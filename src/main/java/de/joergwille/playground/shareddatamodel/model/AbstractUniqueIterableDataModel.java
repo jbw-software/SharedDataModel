@@ -20,7 +20,8 @@ import javax.swing.AbstractListModel;
  */
 public class AbstractUniqueIterableDataModel<E> extends AbstractListModel<E> implements Iterable<E> {
 
-    private static final long serialVersionUID = -3206515347886083915L;
+    private static final long serialVersionUID = 1L;
+    private static final int DEFAULT_INITIAL_CAPACITY = 16; // use a power of 2
     private Set<E> objects;
     private boolean enabled;
     private int sizeBeforeDisabled;
@@ -29,8 +30,7 @@ public class AbstractUniqueIterableDataModel<E> extends AbstractListModel<E> imp
      * Construct a new empty {@link AbstractIterableListModel}
      */
     public AbstractUniqueIterableDataModel() {
-        this.objects = new LinkedHashSet<>();
-        this.enabled = true;
+        this(null);
     }
 
     /**
@@ -39,10 +39,15 @@ public class AbstractUniqueIterableDataModel<E> extends AbstractListModel<E> imp
      * @param initial the collection to initialize the model with. May be null.
      */
     public AbstractUniqueIterableDataModel(Collection<? extends E> initial) {
-        int defaultInitialCapacity = Math.max(16, initial.size());
-        int initialCapacity = AbstractUniqueIterableDataModel.nearestPowerOfTwo(defaultInitialCapacity);
+        int initialCapacity = DEFAULT_INITIAL_CAPACITY;
+        if (initial != null) {
+            int defaultInitialCapacity = Math.max(DEFAULT_INITIAL_CAPACITY, initial.size());
+            initialCapacity = AbstractUniqueIterableDataModel.nearestPowerOfTwo(defaultInitialCapacity);
+        }
         this.objects = new LinkedHashSet<>(initialCapacity);
-        this.objects.addAll(initial);
+        if (initial != null) {
+            this.objects.addAll(initial);
+        }
         this.enabled = true;
     }
 

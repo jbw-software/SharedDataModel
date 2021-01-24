@@ -53,6 +53,7 @@ public class AveChoiceElementCellEditor extends AbstractCellEditor implements Ta
 
         this.updatableSelection = (AveUpdatableSelection) value;
         this.comboBox.setModel(new AveSharedComboBoxModel<>(this.updatableSelection.sharedModel));
+        this.comboBox.setPrototypeDisplayValue(this.updatableSelection.getPrototypeDisplayValue());
         this.comboBox.setSelectedItem(this.updatableSelection.getSelectedItem());
         this.comboBox.addActionListener(this);
 

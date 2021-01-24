@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.util.EventListener;
 import java.util.List;
 import java.util.Objects;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
+import javax.swing.JComboBox;
 import javax.swing.ListModel;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.EventListenerList;
@@ -27,6 +30,7 @@ public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
 
     private static final long serialVersionUID = -3894432749074287792L;
     final protected EventListenerList listenerList; // copied from javax.swing.AbstractListModel
+    private JComboBox<E> associatedComboBox;
     private boolean allowOneMutation;
     private boolean forceDeselectionOnIndexChange;
     private int selectedIndexBackup;
@@ -36,20 +40,41 @@ public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
      * @param sharedModel The {@link AveSharedDataModel} which actually holds
      * items.
      */
-    public AveSharedComboBoxModel(AveSharedDataModel<E> sharedModel) {
-        this(sharedModel, false);
+    public AveSharedComboBoxModel(final AveSharedDataModel<E> sharedModel) {
+        this(sharedModel, null);
     }
 
-    public AveSharedComboBoxModel(AveSharedDataModel<E> sharedModel, boolean allowOneMutation) {
-        this(sharedModel, false, true);
+    public AveSharedComboBoxModel(final AveSharedDataModel<E> sharedModel, final JComboBox<E> associatedComboBox) {
+        this(sharedModel, associatedComboBox, false);
     }
 
-    public AveSharedComboBoxModel(AveSharedDataModel<E> sharedModel, boolean allowOneMutation,
-            boolean forceDeselectionOnIndexChange) {
+    public AveSharedComboBoxModel(AveSharedDataModel<E> sharedModel, final JComboBox<E> associatedComboBox,
+            boolean allowOneMutation) {
+        this(sharedModel, associatedComboBox, false, true);
+    }
+
+    public AveSharedComboBoxModel(final AveSharedDataModel<E> sharedModel, final JComboBox<E> associatedComboBox,
+            boolean allowOneMutation, boolean forceDeselectionOnIndexChange) {
         super(sharedModel);
+        this.associatedComboBox = associatedComboBox;
         this.allowOneMutation = allowOneMutation;
         this.forceDeselectionOnIndexChange = forceDeselectionOnIndexChange;
         this.listenerList = new EventListenerList();
+        this.setPrototypeDisplayValue(sharedModel.getPrototypeDisplayValue());
+     }
+
+    private boolean isOnlyOneMutation(List<E> newItems, List<E> currentItems) {
+        // If the size has changed, it cannot be a one item mutatation.
+        if (newItems.size() != currentItems.size()) {
+            return false;
+        }
+        int changes = 0;
+        for (int i = 0; i < newItems.size(); i++) {
+            if (!newItems.get(i).equals(currentItems.get(i))) {
+                changes++;
+            }
+        }
+        return (changes <= 1);
     }
 
     /**
@@ -103,19 +128,24 @@ public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
     public void setForceDeselectionOnIndexChange(boolean forceDeselectionOnIndexChange) {
         this.forceDeselectionOnIndexChange = forceDeselectionOnIndexChange;
     }
+    
+    public JComboBox<E> getAssociatedComboBox() {
+        return associatedComboBox;
+    }
 
-    private boolean isOnlyOneMutation(List<E> newItems, List<E> currentItems) {
-        // If the size has changed, it cannot be a one item mutatation.
-        if (newItems.size() != currentItems.size()) {
-            return false;
+    public void setAssociatedComboBox(JComboBox<E> associatedComboBox) {
+        this.associatedComboBox = associatedComboBox;
+        
+        // update associatedComboBox with previously set prototypeDisplayValue.
+        this.setPrototypeDisplayValue(super.getPrototypeDisplayValue());
+    }
+    
+    @Override
+    public void setPrototypeDisplayValue(E prototypeDisplayValue) {
+        super.setPrototypeDisplayValue(prototypeDisplayValue);
+        if ((this.associatedComboBox != null)) {
+            this.associatedComboBox.setPrototypeDisplayValue(prototypeDisplayValue);
         }
-        int changes = 0;
-        for (int i = 0; i < newItems.size(); i++) {
-            if (!newItems.get(i).equals(currentItems.get(i))) {
-                changes++;
-            }
-        }
-        return (changes <= 1);
     }
 
     @Override
@@ -190,7 +220,7 @@ public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
     }
 
     @Override
-    public void updating(State state, List<E> newItems, List<E> currentItems) {
+    public void updating(State state, List<E> newItems, List<E> currentItems, E prototypeDisplayValue) {
 
         if (UpdateListener.State.BEFORE_UPDATE.equals(state)) {
             int selectedObjIndex = -1;
@@ -226,6 +256,8 @@ public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
             selectedIndexBackup = selectedObjIndex;
 
         } else { // UpdateListener.State.AFTER_UPDATE
+            this.setPrototypeDisplayValue(prototypeDisplayValue);
+            
             if (selectedIndexBackup >= 0 && selectedIndexBackup < this.getSize()) {
                 setSelectedItem(newItems.get(selectedIndexBackup));
             } else {

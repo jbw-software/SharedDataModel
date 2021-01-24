@@ -22,6 +22,8 @@ public interface UpdateListener<E> {
      * @param state
      * @param newItems
      * @param currentItems
+     * @param prototypeDisplayValue  A PrototypeDisplayValue to be used for optimizing rendering.
+     *                               Might be <i>null<i/>.
      */
-    public void updating(State state, List<E> newItems, List<E> currentItems);
+    public void updating(State state, List<E> newItems, List<E> currentItems, E prototypeDisplayValue);
 }

@@ -1,9 +1,11 @@
 package de.joergwille.playground.shareddatamodel;
 
+import de.joergwille.playground.shareddatamodel.model.AveChoiceElement;
 import de.joergwille.playground.shareddatamodel.model.AveChoiceElementCellEditor;
 import de.joergwille.playground.shareddatamodel.model.AveChoiceElementCellRenderer;
 import de.joergwille.playground.shareddatamodel.model.AveSharedComboBoxModel;
 import de.joergwille.playground.shareddatamodel.model.AveSharedDataModel;
+import de.joergwille.playground.shareddatamodel.model.AveTableCustom;
 import de.joergwille.playground.shareddatamodel.model.AveTableModel;
 import de.joergwille.playground.shareddatamodel.model.AveTableRowEntry;
 import de.joergwille.playground.shareddatamodel.model.AveUpdatableSelection;
@@ -14,11 +16,9 @@ import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 
@@ -28,9 +28,10 @@ import javax.swing.JTable;
  */
 public class SharedDataModelUi extends JFrame {
 
+    private static final long serialVersionUID = 1L;
     private static final int NUM_LISTS = 3;
-    private static final String[] items = {"None", "Spring", "Summer", "Fall", "Winter"};
-    private static final String[] updatedItems = {"None", "Frühling", "Sommer", "Winter", "Herbst"};
+    private static final String[] items = {"None1", "Spring", "Summer", "Fall", "Winter"};
+    private static final String[] updatedItems = {"None2", "Frühling", "Sommer", "Winter", "Herbst", "EinGanzLangerStringMitSehrVielenBuchstaben"};
     //The one & only sharedDataModel for both JComboBoxes
     final AveSharedDataModel<String> sharedDataModel;
 
@@ -40,7 +41,8 @@ public class SharedDataModelUi extends JFrame {
         super.setDefaultCloseOperation(EXIT_ON_CLOSE);
         super.setLocationRelativeTo(null);
 
-        this.sharedDataModel = new AveSharedDataModel<>();
+        // create a SharedDataModel with AutoSetPrototypeDisplayValue enabled.
+        this.sharedDataModel = new AveSharedDataModel<>(true);
         for (String item : items) {
             sharedDataModel.addElement(item);
         }
@@ -50,11 +52,10 @@ public class SharedDataModelUi extends JFrame {
     }
 
     private void createLayout(Container container) {
-
         JTabbedPane tabPane = new JTabbedPane();
         container.add(tabPane);
         createJCombos(tabPane);
-        creatTable(tabPane);
+        createTable(tabPane);
     }
 
     @SuppressWarnings("unchecked")
@@ -62,7 +63,8 @@ public class SharedDataModelUi extends JFrame {
         JPanel rootJCombos = new JPanel(new BorderLayout());
         tab.add("ComboBox", rootJCombos);
 
-        JPanel comboPanel = new JPanel(new GridLayout(1, NUM_LISTS, 5, 5));
+//        JPanel comboPanel = new JPanel(new GridLayout(1, NUM_LISTS, 5, 5));
+        JPanel comboPanel = new JPanel();
         rootJCombos.add(comboPanel, BorderLayout.NORTH);
 
         JPanel buttonsPanel = new JPanel(new GridLayout(1, NUM_LISTS, 15, 5));
@@ -79,7 +81,9 @@ public class SharedDataModelUi extends JFrame {
             seperateSelectableSharedDataModel.setAllowOneMutation(true); // retain selection state (keep updatableSelection index) if exactly one element mutates (e.g. if it is being "renamed")
             seperateSelectableSharedDataModel.setForceDeselectionOnIndexChange(true); // force a deselection of the item since the index has changed but the updatableSelection item remained constant
 
-            JComboBox<String> jComboBox = new JComboBox<>(seperateSelectableSharedDataModel);
+            AveChoiceElement jComboBox = new AveChoiceElement(seperateSelectableSharedDataModel);
+            seperateSelectableSharedDataModel.setAssociatedComboBox(jComboBox); // associate a JComboBox for optimization of rendering with a DisplayPrototyp
+
             jComboBox.setSelectedIndex(0);
             lastSelectedjComboItem[index] = seperateSelectableSharedDataModel.getSelectedItem().toString();
             jComboBox.addItemListener(itemEvent -> {
@@ -95,7 +99,7 @@ public class SharedDataModelUi extends JFrame {
                     System.out.printf("List %d deselected %s (idx=%d)\n", index + 1, string, sharedDataModel.getIndexOf(selectedItem));
                 }
             });
-            comboPanel.add(new JScrollPane(jComboBox));
+            comboPanel.add(jComboBox);
 
             JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 5));
             JButton btnAddOrRename;
@@ -144,11 +148,12 @@ public class SharedDataModelUi extends JFrame {
         }
     }
 
-    private void creatTable(JTabbedPane tab) {
+    private void createTable(JTabbedPane tab) {
         JPanel rootJCombos = new JPanel(new BorderLayout());
         tab.add("Table", rootJCombos);
 
-        JPanel comboPanel = new JPanel(new GridLayout(1, NUM_LISTS, 5, 5));
+//        JPanel comboPanel = new JPanel(new GridLayout(1, NUM_LISTS, 5, 5));
+        JPanel comboPanel = new JPanel();
         rootJCombos.add(comboPanel, BorderLayout.NORTH);
 
         String[] columnNames = {"Number", "Choice", "Text", "SharedChoice", "Checkbox"};
@@ -156,37 +161,34 @@ public class SharedDataModelUi extends JFrame {
             {"0", "null"}, {"1", "eins"}, {"2", "zwei"}, {"3", "drei"}, {"4", "vier"}
         };
 
-        AveSharedDataModel<String> choiceData = new AveSharedDataModel<>(new String[]{"None", "A", "B", "C", "D"});
+        // create a SharedDataModel with AutoSetPrototypeDisplayValue enabled.
+        AveSharedDataModel<String> choiceData = new AveSharedDataModel<>(new String[]{"None3", "A", "B", "C", "D"}, true);
 
         int numberOfRows = stringData.length;
         final AveTableRowEntry[] tableData = new AveTableRowEntry[numberOfRows];
 
 //        TWO POSSIBLE WAYS TO INSTNCIATE TABEL DATA:
 //        1. USING CLASSES AND AVEUPDATABLESELECTION
-
 //        final Class<?>[] sequence = new Class<?>[]{String.class, AveUpdatableSelection.class, String.class, AveUpdatableSelection.class, Boolean.class};
 //        for (int i = 0; i < numberOfRows; i++) {
 //            AveUpdatableSelection<String> comboBoxData1 = new AveUpdatableSelection<>(choiceData, null, false, true);
 //            AveUpdatableSelection<String> comboBoxData2 = new AveUpdatableSelection<>(this.sharedDataModel, null, false, true);
 //            tableData[i] = new AveTableRowEntry(sequence, stringData[i], new Boolean[]{(i % 2 == 0)}, new AveUpdatableSelection<?>[]{comboBoxData1, comboBoxData2});
 //        }
-        
 //        2. USING COLUMNTYPES AND CHOICEMODELS
-
-        final String[] columnTypes = new String[] {"string", "choice", "string", "choice", "boolean"};
+        final String[] columnTypes = new String[]{"string", "choice", "string", "choice", "boolean"};
         @SuppressWarnings({"unchecked", "rawtypes"})
-        final AveSharedDataModel<String>[] choiceModels = new AveSharedDataModel[] {choiceData, this.sharedDataModel};
-        
+        final AveSharedDataModel<String>[] choiceModels = new AveSharedDataModel[]{choiceData, this.sharedDataModel};
+
         for (int i = 0; i < numberOfRows; i++) {
             String[] stringDataForRow = stringData[i];
             // defaultValues is optional, but if set, then it must be same length as number of coloumns.
             // if there are no defaultValues for ComboBoxes use 'null' for 'choice' coloumns.
-            String[] defaultValues = new String[]{stringDataForRow[0], choiceData.getElementAt(i), stringDataForRow[1], this.sharedDataModel.getElementAt(i), (i % 2 == 0) ? "true": "false"};
+            String[] defaultValues = new String[]{stringDataForRow[0], choiceData.getElementAt(i), stringDataForRow[1], this.sharedDataModel.getElementAt(i), (i % 2 == 0) ? "true" : "false"};
             tableData[i] = new AveTableRowEntry(columnTypes, choiceModels, defaultValues);
         }
-        
-//      END OF TABEL DATA INITIALIZATION         
 
+//      END OF TABEL DATA INITIALIZATION         
         final AveTableModel tableModel = new AveTableModel(columnNames);
         for (AveTableRowEntry rowData : tableData) {
             tableModel.addRow(rowData);

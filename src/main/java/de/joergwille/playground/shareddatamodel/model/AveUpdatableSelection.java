@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * AveUpdatableSelection is the smallest common denominators for storing a
  * selection of a <code>JComboBox</code>. {@link AveSharedComboBoxModel} extends
- * from it to individually store the selection for each instance. In also is
+ * from it to individually store the selection for each instance. It also is
  * being used as the selection model for a <code>JComboBox</code> within a
  * <code>JTabel</code>. It has a reference to {@link AveSharedDataModel}. It
  * implements {@link UpdateListener} to react on changes for the
@@ -17,11 +17,12 @@ import java.util.List;
  */
 public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable {
 
-    private static final long serialVersionUID = -2417589986708592620L;
+    private static final long serialVersionUID = 1L;
     protected final AveSharedDataModel<E> sharedModel;
     private Object selectedItem;
     private boolean allowEmptySelection;
     private boolean matchSelectionByString;
+    private E prototypeDisplayValue;
 
     /**
      *
@@ -29,22 +30,42 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
      * <code>selectedItem</code> is a member.
      */
     public AveUpdatableSelection(AveSharedDataModel<E> sharedModel) {
-        this(sharedModel, null);
+        this(sharedModel, (E) null);
     }
 
-    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, E selected) {
-        this(sharedModel, null, true);
+    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, final E selected) {
+        this(sharedModel, selected, true);
     }
 
-    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, E selected, boolean allowEmptySelection) {
-        this(sharedModel, null, allowEmptySelection, false);
+//    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, final JComboBox<E> associatedComboBox) {
+//        this(sharedModel, associatedComboBox, (E) null);
+//    }
+//
+//    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, final JComboBox<E> associatedComboBox,
+//            final E selected) {
+//        this(sharedModel, associatedComboBox, selected, true);
+//    }
+
+//    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, final E selected, boolean allowEmptySelection) {
+//        this(sharedModel, null, selected, allowEmptySelection, false);
+//    }
+
+    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, final E selected, boolean allowEmptySelection) {
+        this(sharedModel, selected, allowEmptySelection, false);
     }
 
-    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, E selected, boolean allowEmptySelection, boolean matchSelectionByString) {
+//    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, final E selected, boolean allowEmptySelection,
+//            boolean matchSelectionByString) {
+//        this(sharedModel, null, selected, allowEmptySelection, false);
+//    }
+
+    public AveUpdatableSelection(AveSharedDataModel<E> sharedModel, final E selected, boolean allowEmptySelection,
+            boolean matchSelectionByString) {
         this.sharedModel = sharedModel;
         this.allowEmptySelection = allowEmptySelection;
         this.matchSelectionByString = matchSelectionByString;
         this.setSelected(selected);
+        this.setPrototypeDisplayValue(sharedModel.getPrototypeDisplayValue());
         this.addListener();
     }
 
@@ -85,8 +106,12 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
     }
 
     @Override
-    public void updating(State state, List<E> newItems, List<E> currentItems) {
+    public void updating(State state, List<E> newItems, List<E> currentItems, E prototypeDisplayValue) {
         if (UpdateListener.State.AFTER_UPDATE.equals(state)) {
+            
+            // use PrototypeDisplayValue from AveSharedDataModel
+            this.setPrototypeDisplayValue(prototypeDisplayValue);
+
             Object newSelection = null;
             int indexInCurrentItems = currentItems.indexOf(this.selectedItem);
             int indexInNewItems = newItems.indexOf(this.selectedItem);
@@ -105,6 +130,14 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
 
     public void removeNotify() {
         this.removeListener();
+    }
+
+    public E getPrototypeDisplayValue() {
+        return this.prototypeDisplayValue;
+    }
+    
+    public void setPrototypeDisplayValue(E prototypeDisplayValue) {
+        this.prototypeDisplayValue = prototypeDisplayValue;
     }
 
     /**
