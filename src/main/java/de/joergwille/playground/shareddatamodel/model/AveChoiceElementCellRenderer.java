@@ -47,7 +47,10 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
         this.setPrototypeDisplayValue((String)updatableSelection.getPrototypeDisplayValue());
         final DefaultTableColumnModel colModel = (DefaultTableColumnModel) table.getColumnModel();
         final TableColumn tableColumn = colModel.getColumn(column);
-        tableColumn.setPreferredWidth(this.getPreferredSize().width);
+        int prefColumnWidth = this.getPreferredSize().width;
+        if (tableColumn.getWidth() != prefColumnWidth) {
+            tableColumn.setPreferredWidth(prefColumnWidth);
+        }
         
         this.setForeground((isSelected && hasFocus) ? table.getSelectionForeground() : table.getForeground());
         this.setBackground((isSelected && hasFocus) ? table.getSelectionBackground() : table.getBackground());

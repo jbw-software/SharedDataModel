@@ -5,48 +5,69 @@
  */
 package de.joergwille.playground.shareddatamodel.model;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
+import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 /**
  *
- * @author joerg 
- * JTable is missing VisibleRowCount and therefore PreferredScrollableViewportSize is not working as expected.
- * See https://stackoverflow.com/questions/9821425/how-to-set-jscrollpane-to-show-only-a-sepecific-amount-of-rows
- * Using org.jdesktop.swingx.JXTable would be good alternative.
- * For now using workaround suggested here: https://bugs.openjdk.java.net/browse/JDK-4901352
+ * @author joerg JTable is missing VisibleRowCount and therefore
+ * PreferredScrollableViewportSize is not working as expected. See
+ * https://stackoverflow.com/questions/9821425/how-to-set-jscrollpane-to-show-only-a-sepecific-amount-of-rows
+ * Using org.jdesktop.swingx.JXTable would be good alternative. For now using
+ * workaround suggested here: https://bugs.openjdk.java.net/browse/JDK-4901352
  */
 public class AveTable extends JTable {
 
     private static final long serialVersionUID = 1L;
     private static final int DEFAULT_VISIBLE_ROW_COUNT = 1;
-    private int visibleRowCount; 
-    private int viewportHeightMargin; 
+    private int visibleRowCount;
+    private int viewportHeightMargin;
 
     public AveTable(final TableModel tableModel) {
         this(tableModel, Math.max(DEFAULT_VISIBLE_ROW_COUNT, tableModel.getRowCount()));
     }
-    
+
     public AveTable(final TableModel tableModel, int visibleRowCount) {
         this(tableModel, visibleRowCount, 0);
     }
 
-    public AveTable(final TableModel tableModel, int visibleRowCount, int viewportHeightMargin) {
+    public AveTable(final TableModel tableModel, int visibleRowCount, int columnHeaderPadding) {
+        this(tableModel, visibleRowCount, columnHeaderPadding, 0);
+    }
+
+    public AveTable(final TableModel tableModel, int visibleRowCount, int columnHeaderPadding, int viewportHeightMargin) {
         super(tableModel);
         this.visibleRowCount = visibleRowCount >= 0 ? visibleRowCount : tableModel.getRowCount();
         this.viewportHeightMargin = viewportHeightMargin;
+
+        // JTable uses some default values for PreferredScrollableViewportSize. Do not use these.
         super.setPreferredScrollableViewportSize(null);
-        
-        // table will not fill ScrollPane's ViewPort width. See table.getScrollableTracksViewportWidth()
+
+        // Table will not fill ScrollPane's ViewPort width. See table.getScrollableTracksViewportWidth().
         super.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        // table will fill ScrollPane's ViewPort height.
+        // Table will fill ScrollPane's ViewPort height.
         super.setFillsViewportHeight(false);
+
+        // Table colums can not be reordered.
+        super.getTableHeader().setReorderingAllowed(false);
+
+        // Configure renderer and editor for ComboBoxes.
+        super.setDefaultRenderer(AveUpdatableSelection.class, AveChoiceElementCellRenderer.getInstance());
+        super.setDefaultEditor(AveUpdatableSelection.class, AveChoiceElementCellEditor.getInstance());
+
+        // Configure renderer for ColumnHeaders.
+        super.getTableHeader().setDefaultRenderer(new MinWidthHeaderRenderer(this, columnHeaderPadding));
     }
 
-    
     /**
      * Sets the preferred number of rows in the table that can be displayed
      * without a scrollbar, as determined by the nearest <code>JViewport</code>
@@ -83,7 +104,7 @@ public class AveTable extends JTable {
     public void setViewportHeightMargin(int viewportHeightMargin) {
         this.viewportHeightMargin = viewportHeightMargin;
     }
-    
+
     /**
      * Computes the size of the viewport needed to display
      * <code>visibleRowCount</code> number of rows and accomodate all columns
@@ -94,16 +115,49 @@ public class AveTable extends JTable {
      */
     @Override
     public Dimension getPreferredScrollableViewportSize() {
-        
-        // just in case someone has set it manually
+
+        // Just in case someone has set PreferredScrollableViewportSize manually, use it.
         if (super.getPreferredScrollableViewportSize() != null) {
             return super.getPreferredScrollableViewportSize();
         }
-
-        Dimension preferredSize = super.getPreferredSize();
+        
+        System.out.println("TableWidth=" + super.getPreferredSize().width + ", TotalColumnWidth=" + super.getColumnModel().getTotalColumnWidth());
+        final Dimension preferredSize = super.getPreferredSize();
         final Insets insets = getInsets();
         int insetsAndMargin = insets.top + insets.bottom + this.viewportHeightMargin;
         preferredSize.height = this.getVisibleRowCount() * super.getRowHeight() + insetsAndMargin;
+//        preferredSize.width = super.getColumnModel().getTotalColumnWidth();
         return preferredSize;
+    }
+
+    private static class MinWidthHeaderRenderer implements TableCellRenderer {
+
+        final DefaultTableCellRenderer renderer;
+        int columnPadding;
+
+        public MinWidthHeaderRenderer(final JTable table, int columnPadding) {
+            this.renderer = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
+            
+            // Have the header label be in the center of column.
+            renderer.setHorizontalAlignment(JLabel.CENTER);
+            
+            this.columnPadding = columnPadding;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected,
+                boolean hasFocus, int row, int column) {
+            final Component component = renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            final DefaultTableColumnModel colModel = (DefaultTableColumnModel) table.getColumnModel();
+            final TableColumn tableColumn = colModel.getColumn(column);
+
+            int minColumnWidth = component.getPreferredSize().width + (2 * this.columnPadding);
+            if (tableColumn.getWidth() < minColumnWidth) {
+                tableColumn.setMinWidth(minColumnWidth);
+            }
+
+            return component;
+        }
     }
 }

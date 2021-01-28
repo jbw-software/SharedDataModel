@@ -1,14 +1,11 @@
 package de.joergwille.playground.shareddatamodel;
 
 import de.joergwille.playground.shareddatamodel.model.AveChoiceElement;
-import de.joergwille.playground.shareddatamodel.model.AveChoiceElementCellEditor;
-import de.joergwille.playground.shareddatamodel.model.AveChoiceElementCellRenderer;
 import de.joergwille.playground.shareddatamodel.model.AveSharedComboBoxModel;
 import de.joergwille.playground.shareddatamodel.model.AveSharedDataModel;
 import de.joergwille.playground.shareddatamodel.model.AveTable;
 import de.joergwille.playground.shareddatamodel.model.AveTableModel;
 import de.joergwille.playground.shareddatamodel.model.AveTableRowEntry;
-import de.joergwille.playground.shareddatamodel.model.AveUpdatableSelection;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
@@ -34,11 +31,11 @@ import javax.swing.JTable;
 public class SharedDataModelUi extends JFrame {
 
     private static final long serialVersionUID = 1L;
-    private static final int NUM_LISTS = 3;
     private static final String[] items = {"None1", "Spring", "Summer", "Fall", "Winter"};
     private static final String[] updatedItems = {"None2", "Frühling", "Sommer", "Winter", "Herbst", "EinGanzLangerStringMitSehrVielenBuchstaben"};
     private static final int MIN_VISIBLE_ROW_COUNT = 3;
     private static final int DEFAULT_VIEWPORT_HEIGHT_MARGIN = 10;
+    private static final int DEFAULT_COLUMN_HEADER_PADDING = 10;
 
     //The one & only sharedDataModel for both JComboBoxes
     final AveSharedDataModel<String> sharedDataModel;
@@ -194,14 +191,10 @@ public class SharedDataModelUi extends JFrame {
         }
 
 //      TABLE INITIALIZATION
-        final AveTable table = new AveTable(tableModel, MIN_VISIBLE_ROW_COUNT, DEFAULT_VIEWPORT_HEIGHT_MARGIN);
+        final AveTable table = new AveTable(tableModel, MIN_VISIBLE_ROW_COUNT, DEFAULT_COLUMN_HEADER_PADDING, DEFAULT_VIEWPORT_HEIGHT_MARGIN);
         table.setName("Tabelle");
         table.addComponentListener(componentListener);
-
         table.setRowHeight(35);
-        table.setDefaultRenderer(AveUpdatableSelection.class, AveChoiceElementCellRenderer.getInstance());
-        table.setDefaultEditor(AveUpdatableSelection.class, AveChoiceElementCellEditor.getInstance());
-        System.out.println("PreferredScrollableViewportSize width=" + table.getPreferredScrollableViewportSize().width + ", height=" + table.getPreferredScrollableViewportSize().height);
 
 //      UI INITIALIZATION
         final JPanel rootJTables = new JPanel(new BorderLayout());
