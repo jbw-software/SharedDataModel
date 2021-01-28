@@ -5,12 +5,17 @@ import de.joergwille.playground.shareddatamodel.model.AveChoiceElementCellEditor
 import de.joergwille.playground.shareddatamodel.model.AveChoiceElementCellRenderer;
 import de.joergwille.playground.shareddatamodel.model.AveSharedComboBoxModel;
 import de.joergwille.playground.shareddatamodel.model.AveSharedDataModel;
+import de.joergwille.playground.shareddatamodel.model.AveTable;
 import de.joergwille.playground.shareddatamodel.model.AveTableModel;
 import de.joergwille.playground.shareddatamodel.model.AveTableRowEntry;
 import de.joergwille.playground.shareddatamodel.model.AveUpdatableSelection;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +23,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 
@@ -31,8 +37,12 @@ public class SharedDataModelUi extends JFrame {
     private static final int NUM_LISTS = 3;
     private static final String[] items = {"None1", "Spring", "Summer", "Fall", "Winter"};
     private static final String[] updatedItems = {"None2", "Frühling", "Sommer", "Winter", "Herbst", "EinGanzLangerStringMitSehrVielenBuchstaben"};
+    private static final int MIN_VISIBLE_ROW_COUNT = 3;
+    private static final int DEFAULT_VIEWPORT_HEIGHT_MARGIN = 10;
+
     //The one & only sharedDataModel for both JComboBoxes
     final AveSharedDataModel<String> sharedDataModel;
+    final ComponentListener componentListener = new ComponentListenerPrinter(); // only needed for debugging
 
     public SharedDataModelUi() {
         super("SharedDataModel Test");
@@ -62,12 +72,11 @@ public class SharedDataModelUi extends JFrame {
         JPanel rootJCombos = new JPanel(new BorderLayout());
         tab.add("ComboBox", rootJCombos);
 
-//        JPanel comboPanel = new JPanel(new GridLayout(1, NUM_LISTS, 5, 5));
-        JPanel comboPanel = new JPanel();
-        rootJCombos.add(comboPanel, BorderLayout.NORTH);
+        JPanel combosPanel = new JPanel(new FlowLayout());
+        rootJCombos.add(combosPanel, BorderLayout.CENTER);
 
-        JPanel buttonsPanel = new JPanel(new GridLayout(1, NUM_LISTS, 15, 5));
-        rootJCombos.add(buttonsPanel, BorderLayout.SOUTH);
+        JPanel buttonsPanel = new JPanel(new GridLayout(1, 4, 15, 5));
+        rootJCombos.add(buttonsPanel, BorderLayout.PAGE_END);
 
         final int NUM_JCOMBO_BOXES = 2;
         final String[] lastSelectedjComboItem = new String[NUM_JCOMBO_BOXES];
@@ -98,9 +107,7 @@ public class SharedDataModelUi extends JFrame {
                     System.out.printf("List %d deselected %s (idx=%d)\n", index + 1, string, sharedDataModel.getIndexOf(selectedItem));
                 }
             });
-            comboPanel.add(jComboBox);
-
-            JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 15, 5));
+            combosPanel.add(jComboBox);
             JButton btnAddOrRename;
             if (index == 0) {
                 btnAddOrRename = new JButton("Add to both");
@@ -124,7 +131,7 @@ public class SharedDataModelUi extends JFrame {
                     }
                 });
             }
-            buttonPanel.add(btnAddOrRename);
+            buttonsPanel.add(btnAddOrRename);
 
             JButton btnRemoveOrUpdate;
             if (index == 0) {
@@ -141,20 +148,11 @@ public class SharedDataModelUi extends JFrame {
                     }
                 });
             }
-            buttonPanel.add(btnRemoveOrUpdate);
-
-            buttonsPanel.add(buttonPanel);
+            buttonsPanel.add(btnRemoveOrUpdate);
         }
     }
 
     private void createTable(JTabbedPane tab) {
-        JPanel rootJCombos = new JPanel(new BorderLayout());
-        tab.add("Table", rootJCombos);
-
-//        JPanel comboPanel = new JPanel(new GridLayout(1, NUM_LISTS, 5, 5));
-        JPanel comboPanel = new JPanel();
-        rootJCombos.add(comboPanel, BorderLayout.NORTH);
-
         String[] columnNames = {"Number", "Choice", "Text", "SharedChoice", "Checkbox"};
         String[][] stringData = {
             {"0", "null"}, {"1", "eins"}, {"2", "zwei"}, {"3", "drei"}, {"4", "vier"}
@@ -188,16 +186,89 @@ public class SharedDataModelUi extends JFrame {
         }
 
 //      END OF TABEL DATA INITIALIZATION         
+
+//      TABLE MODEL INITIALIZATION
         final AveTableModel tableModel = new AveTableModel(columnNames);
         for (AveTableRowEntry rowData : tableData) {
             tableModel.addRow(rowData);
         }
 
-        final JTable table = new JTable(tableModel);
-        table.setRowHeight(40);
+//      TABLE INITIALIZATION
+        final AveTable table = new AveTable(tableModel, MIN_VISIBLE_ROW_COUNT, DEFAULT_VIEWPORT_HEIGHT_MARGIN);
+        table.setName("Tabelle");
+        table.addComponentListener(componentListener);
+
+        table.setRowHeight(35);
         table.setDefaultRenderer(AveUpdatableSelection.class, AveChoiceElementCellRenderer.getInstance());
         table.setDefaultEditor(AveUpdatableSelection.class, AveChoiceElementCellEditor.getInstance());
+        System.out.println("PreferredScrollableViewportSize width=" + table.getPreferredScrollableViewportSize().width + ", height=" + table.getPreferredScrollableViewportSize().height);
 
-        comboPanel.add(table);
+//      UI INITIALIZATION
+        final JPanel rootJTables = new JPanel(new BorderLayout());
+        rootJTables.setBackground(Color.BLUE);
+
+        final JPanel tablePanel = new JPanel(new BorderLayout());
+        tablePanel.setBackground(Color.GREEN);
+
+        // SCROLLPANE INITIALIZATION
+        final JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setName("ScrollPane");
+        scrollPane.addComponentListener(componentListener);
+        scrollPane.setBackground(Color.MAGENTA);
+        scrollPane.getViewport().setBackground(Color.RED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        // scrollPane.getViewport().setPreferredSize(table.getPreferredSize()); // in JTable PreferredScrollableViewportSize is not implemented, therefore use PreferredSize
+        scrollPane.getViewport().setPreferredSize(table.getPreferredScrollableViewportSize());
+        tablePanel.add(scrollPane, BorderLayout.PAGE_START);
+
+        // BUTTON INITIALIZATION
+        final JButton addRowButton = new JButton("Add Row");
+        addRowButton.addActionListener(a -> {
+            tableModel.addRow(new AveTableRowEntry(columnTypes, choiceModels));
+        });
+        final JButton removeRowButton = new JButton("Remove Row");
+        removeRowButton.addActionListener(a -> {
+            tableModel.removeRow(tableModel.getRowCount() - 1);
+        });
+        tablePanel.add(addRowButton, BorderLayout.LINE_START);
+        tablePanel.add(removeRowButton, BorderLayout.LINE_END);
+
+        rootJTables.add(tablePanel, BorderLayout.PAGE_START);
+        tab.add("Table", rootJTables);
+    }
+
+    private class ComponentListenerPrinter implements ComponentListener {
+
+        @Override
+        public void componentHidden(ComponentEvent event) {
+//            print("Hidden", event);
+        }
+
+        @Override
+        public void componentMoved(ComponentEvent event) {
+//            print("Moved", event);
+        }
+
+        @Override
+        public void componentResized(ComponentEvent event) {
+            if (event.getComponent() instanceof JTable) {
+                final JTable table = (JTable) event.getComponent();
+                print("Resized width=" + table.getWidth() + ", height=" + table.getHeight()
+                        + " | PreferredScrollableViewport width=" + table.getPreferredScrollableViewportSize().width
+                        + ", height=" + table.getPreferredScrollableViewportSize().height, event);
+            } else {
+                print("Resized width=" + event.getComponent().getWidth() + ", height=" + event.getComponent().getHeight(), event);
+
+            }
+        }
+
+        @Override
+        public void componentShown(ComponentEvent event) {
+//            print("Shown", event);
+        }
+
+        private void print(String str, ComponentEvent event) {
+            System.out.println(event.getComponent().getName() + ": " + str);
+        }
     }
 }
