@@ -9,10 +9,9 @@ import de.joergwille.playground.shareddatamodel.model.AveTableRowEntry;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +21,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTable;
+import javax.swing.event.ChangeEvent;
 
 /**
  *
@@ -39,7 +38,6 @@ public class SharedDataModelUi extends JFrame {
 
     //The one & only sharedDataModel for both JComboBoxes
     final AveSharedDataModel<String> sharedDataModel;
-    final ComponentListener componentListener = new ComponentListenerPrinter(); // only needed for debugging
 
     public SharedDataModelUi() {
         super("SharedDataModel Test");
@@ -192,8 +190,6 @@ public class SharedDataModelUi extends JFrame {
 
 //      TABLE INITIALIZATION
         final AveTable table = new AveTable(tableModel, MIN_VISIBLE_ROW_COUNT, DEFAULT_COLUMN_HEADER_PADDING, DEFAULT_VIEWPORT_HEIGHT_MARGIN);
-        table.setName("Tabelle");
-        table.addComponentListener(componentListener);
         table.setRowHeight(35);
 
 //      UI INITIALIZATION
@@ -205,8 +201,6 @@ public class SharedDataModelUi extends JFrame {
 
         // SCROLLPANE INITIALIZATION
         final JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setName("ScrollPane");
-        scrollPane.addComponentListener(componentListener);
         scrollPane.setBackground(Color.MAGENTA);
         scrollPane.getViewport().setBackground(Color.RED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -225,43 +219,24 @@ public class SharedDataModelUi extends JFrame {
         });
         tablePanel.add(addRowButton, BorderLayout.LINE_START);
         tablePanel.add(removeRowButton, BorderLayout.LINE_END);
+        
+        final JPanel tablePanelLayoutPanel = new JPanel(new BorderLayout());
+        tablePanelLayoutPanel.add(tablePanel, BorderLayout.LINE_START);
+        final JPanel dummyPanel = new JPanel();
+        dummyPanel.setBackground(Color.YELLOW);
+        tablePanelLayoutPanel.add(dummyPanel, BorderLayout.CENTER);
 
-        rootJTables.add(tablePanel, BorderLayout.PAGE_START);
-        tab.add("Table", rootJTables);
-    }
-
-    private class ComponentListenerPrinter implements ComponentListener {
-
-        @Override
-        public void componentHidden(ComponentEvent event) {
-//            print("Hidden", event);
-        }
-
-        @Override
-        public void componentMoved(ComponentEvent event) {
-//            print("Moved", event);
-        }
-
-        @Override
-        public void componentResized(ComponentEvent event) {
-            if (event.getComponent() instanceof JTable) {
-                final JTable table = (JTable) event.getComponent();
-                print("Resized width=" + table.getWidth() + ", height=" + table.getHeight()
-                        + " | PreferredScrollableViewport width=" + table.getPreferredScrollableViewportSize().width
-                        + ", height=" + table.getPreferredScrollableViewportSize().height, event);
-            } else {
-                print("Resized width=" + event.getComponent().getWidth() + ", height=" + event.getComponent().getHeight(), event);
-
+        scrollPane.getViewport().addChangeListener((ChangeEvent e) -> {
+            final Dimension d = table.getPreferredScrollableViewportSize();
+            d.height = tablePanel.getHeight();
+            if (scrollPane.getVerticalScrollBar().isVisible()) {
+                d.width += scrollPane.getVerticalScrollBar().getWidth();
             }
-        }
+            tablePanel.setPreferredSize(d);
+            tablePanelLayoutPanel.validate();
+        });
 
-        @Override
-        public void componentShown(ComponentEvent event) {
-//            print("Shown", event);
-        }
-
-        private void print(String str, ComponentEvent event) {
-            System.out.println(event.getComponent().getName() + ": " + str);
-        }
+        rootJTables.add(tablePanelLayoutPanel, BorderLayout.PAGE_START);
+        tab.add("Table", rootJTables);
     }
 }

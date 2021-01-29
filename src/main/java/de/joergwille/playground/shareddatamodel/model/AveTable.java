@@ -120,8 +120,7 @@ public class AveTable extends JTable {
         if (super.getPreferredScrollableViewportSize() != null) {
             return super.getPreferredScrollableViewportSize();
         }
-        
-        System.out.println("TableWidth=" + super.getPreferredSize().width + ", TotalColumnWidth=" + super.getColumnModel().getTotalColumnWidth());
+
         final Dimension preferredSize = super.getPreferredSize();
         final Insets insets = getInsets();
         int insetsAndMargin = insets.top + insets.bottom + this.viewportHeightMargin;
