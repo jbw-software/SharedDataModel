@@ -12,7 +12,12 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.Point;
 import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JButton;
@@ -57,15 +62,15 @@ public class SharedDataModelUi extends JFrame {
 
     private void createLayout(Container container) {
         JTabbedPane tabPane = new JTabbedPane();
-        container.add(tabPane);
         createJCombos(tabPane);
         createTable(tabPane);
+        container.add(tabPane);
     }
 
     @SuppressWarnings("unchecked")
-    private void createJCombos(JTabbedPane tab) {
+    private void createJCombos(final JTabbedPane tabPane) {
         JPanel rootJCombos = new JPanel(new BorderLayout());
-        tab.add("ComboBox", rootJCombos);
+        tabPane.add("ComboBox", rootJCombos);
 
         JPanel combosPanel = new JPanel(new FlowLayout());
         rootJCombos.add(combosPanel, BorderLayout.CENTER);
@@ -147,7 +152,14 @@ public class SharedDataModelUi extends JFrame {
         }
     }
 
-    private void createTable(JTabbedPane tab) {
+    private static void layoutTablePanel(final JPanel parentPanel, final JPanel childPanel, int topPosition, int leftPosition) {
+        final Insets parentInsets = parentPanel.getInsets();
+        final Dimension size = childPanel.getPreferredSize();
+        childPanel.setBounds(parentInsets.left + leftPosition, parentInsets.top + topPosition, size.width, size.height);
+        parentPanel.validate();
+    }
+
+    private void createTable(final JTabbedPane tabPane) {
         String[] columnNames = {"Number", "Choice", "Text", "SharedChoice", "Checkbox"};
         String[][] stringData = {
             {"0", "null"}, {"1", "eins"}, {"2", "zwei"}, {"3", "drei"}, {"4", "vier"}
@@ -179,7 +191,6 @@ public class SharedDataModelUi extends JFrame {
             String[] defaultValues = new String[]{stringDataForRow[0], choiceData.getElementAt(i), stringDataForRow[1], this.sharedDataModel.getElementAt(i), (i % 2 == 0) ? "true" : "false"};
             tableData[i] = new AveTableRowEntry(columnTypes, choiceModels, defaultValues);
         }
-
 //      END OF TABEL DATA INITIALIZATION         
 
 //      TABLE MODEL INITIALIZATION
@@ -193,10 +204,12 @@ public class SharedDataModelUi extends JFrame {
         table.setRowHeight(35);
 
 //      UI INITIALIZATION
-        final JPanel rootJTables = new JPanel(new BorderLayout());
+        final JPanel rootJTables = new JPanel();
+        rootJTables.setLayout(null); // absolute positioning
         rootJTables.setBackground(Color.BLUE);
 
         final JPanel tablePanel = new JPanel(new BorderLayout());
+        tablePanel.setOpaque(true);
         tablePanel.setBackground(Color.GREEN);
 
         // SCROLLPANE INITIALIZATION
@@ -204,11 +217,26 @@ public class SharedDataModelUi extends JFrame {
         scrollPane.setBackground(Color.MAGENTA);
         scrollPane.getViewport().setBackground(Color.RED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        // scrollPane.getViewport().setPreferredSize(table.getPreferredSize()); // in JTable PreferredScrollableViewportSize is not implemented, therefore use PreferredSize
+        // In JTable PreferredScrollableViewportSize is not implemented, therefore use PreferredSize
+        // scrollPane.getViewport().setPreferredSize(table.getPreferredSize());
+        // In AveTable PreferredScrollableViewportSize is implemented.
         scrollPane.getViewport().setPreferredSize(table.getPreferredScrollableViewportSize());
-        tablePanel.add(scrollPane, BorderLayout.PAGE_START);
+
+        // Table columns width change dynamically and therefore the ViewPort changes.
+        // To reflect these changes TablePanel needs to be layouted.
+        scrollPane.getViewport().addChangeListener((ChangeEvent e) -> {
+            final Dimension d = table.getPreferredScrollableViewportSize();
+            d.height = tablePanel.getHeight();
+            if (scrollPane.getVerticalScrollBar().isVisible()) {
+                d.width += scrollPane.getVerticalScrollBar().getWidth();
+            }
+            tablePanel.setPreferredSize(d);
+            SharedDataModelUi.layoutTablePanel(rootJTables, tablePanel, 60, 50);
+        });
+        tablePanel.add(scrollPane, BorderLayout.CENTER);
 
         // BUTTON INITIALIZATION
+        final JPanel buttonsPanel = new JPanel(new BorderLayout());
         final JButton addRowButton = new JButton("Add Row");
         addRowButton.addActionListener(a -> {
             tableModel.addRow(new AveTableRowEntry(columnTypes, choiceModels));
@@ -217,26 +245,43 @@ public class SharedDataModelUi extends JFrame {
         removeRowButton.addActionListener(a -> {
             tableModel.removeRow(tableModel.getRowCount() - 1);
         });
-        tablePanel.add(addRowButton, BorderLayout.LINE_START);
-        tablePanel.add(removeRowButton, BorderLayout.LINE_END);
-        
-        final JPanel tablePanelLayoutPanel = new JPanel(new BorderLayout());
-        tablePanelLayoutPanel.add(tablePanel, BorderLayout.LINE_START);
-        final JPanel dummyPanel = new JPanel();
-        dummyPanel.setBackground(Color.YELLOW);
-        tablePanelLayoutPanel.add(dummyPanel, BorderLayout.CENTER);
+        buttonsPanel.add(addRowButton, BorderLayout.LINE_START);
+        buttonsPanel.add(removeRowButton, BorderLayout.LINE_END);
+        tablePanel.add(buttonsPanel, BorderLayout.PAGE_END);
 
-        scrollPane.getViewport().addChangeListener((ChangeEvent e) -> {
-            final Dimension d = table.getPreferredScrollableViewportSize();
-            d.height = tablePanel.getHeight();
-            if (scrollPane.getVerticalScrollBar().isVisible()) {
-                d.width += scrollPane.getVerticalScrollBar().getWidth();
+        // TablePanel can be resized vertically by clicking and dragging mouse on it.
+        final Point startPoint = new Point();
+        tablePanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    startPoint.setLocation(e.getPoint());
+                }
             }
-            tablePanel.setPreferredSize(d);
-            tablePanelLayoutPanel.validate();
+        });
+        tablePanel.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent event) {
+                final Point currentPoint = event.getPoint();
+                int dY = currentPoint.y - startPoint.y;
+                startPoint.setLocation(currentPoint);
+
+                final Dimension d = tablePanel.getPreferredSize();
+                d.height += dY;
+                
+                // Only change preferred height if greater then minimum height.
+                if (d.height > tablePanel.getMinimumSize().height) {
+                    tablePanel.setPreferredSize(d);
+                }
+                SharedDataModelUi.layoutTablePanel(rootJTables, tablePanel, 60, 50);
+            }
         });
 
-        rootJTables.add(tablePanelLayoutPanel, BorderLayout.PAGE_START);
-        tab.add("Table", rootJTables);
+        SharedDataModelUi.layoutTablePanel(rootJTables, tablePanel, 60, 50);
+        // save TablePanel minimum size.
+        tablePanel.setMinimumSize(tablePanel.getPreferredSize());
+        
+        rootJTables.add(tablePanel);
+        tabPane.add("Table", rootJTables);
     }
 }
