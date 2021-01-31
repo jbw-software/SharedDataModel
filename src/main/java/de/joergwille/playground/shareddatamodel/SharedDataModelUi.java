@@ -14,6 +14,8 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -40,6 +42,9 @@ public class SharedDataModelUi extends JFrame {
     private static final int MIN_VISIBLE_ROW_COUNT = 3;
     private static final int DEFAULT_VIEWPORT_HEIGHT_MARGIN = 10;
     private static final int DEFAULT_COLUMN_HEADER_PADDING = 10;
+    private static final int DEFAULT_TABLE_PANEL_TOP = 60;
+    private static final int DEFAULT_TABLE_PANEL_LEFT = 50;
+    private static final boolean TABLE_PANEL_COMPACT_LAYOUT = true;
 
     //The one & only sharedDataModel for both JComboBoxes
     final AveSharedDataModel<String> sharedDataModel;
@@ -152,7 +157,7 @@ public class SharedDataModelUi extends JFrame {
         }
     }
 
-    private static void layoutTablePanel(final JPanel parentPanel, final JPanel childPanel, int topPosition, int leftPosition) {
+    private static void setBoundsInParent(final JPanel childPanel, final JPanel parentPanel, int topPosition, int leftPosition) {
         final Insets parentInsets = parentPanel.getInsets();
         final Dimension size = childPanel.getPreferredSize();
         childPanel.setBounds(parentInsets.left + leftPosition, parentInsets.top + topPosition, size.width, size.height);
@@ -202,12 +207,13 @@ public class SharedDataModelUi extends JFrame {
 //      TABLE INITIALIZATION
         final AveTable table = new AveTable(tableModel, MIN_VISIBLE_ROW_COUNT, DEFAULT_COLUMN_HEADER_PADDING, DEFAULT_VIEWPORT_HEIGHT_MARGIN);
         table.setRowHeight(35);
+        table.setAutoResizeMode(!TABLE_PANEL_COMPACT_LAYOUT);
 
 //      UI INITIALIZATION
-        final JPanel rootJTables = new JPanel();
-        rootJTables.setLayout(null); // absolute positioning
+        final JPanel rootJTables = new JPanel(); // defaults to FlowLayout
+        // Use absolute positioning for "compact" layout.
+        rootJTables.setLayout(null);
         rootJTables.setBackground(Color.BLUE);
-
         final JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.setOpaque(true);
         tablePanel.setBackground(Color.GREEN);
@@ -227,11 +233,13 @@ public class SharedDataModelUi extends JFrame {
         scrollPane.getViewport().addChangeListener((ChangeEvent e) -> {
             final Dimension d = table.getPreferredScrollableViewportSize();
             d.height = tablePanel.getHeight();
-            if (scrollPane.getVerticalScrollBar().isVisible()) {
+            
+            // Depending on TABLE_PANEL_COMPACT_LAYOUT mode, vertical ScrollBars are either within last column or added to the right side.
+            if (TABLE_PANEL_COMPACT_LAYOUT && scrollPane.getVerticalScrollBar().isVisible()) {
                 d.width += scrollPane.getVerticalScrollBar().getWidth();
             }
             tablePanel.setPreferredSize(d);
-            SharedDataModelUi.layoutTablePanel(rootJTables, tablePanel, 60, 50);
+            SharedDataModelUi.setBoundsInParent(tablePanel, rootJTables, DEFAULT_TABLE_PANEL_TOP, DEFAULT_TABLE_PANEL_LEFT);
         });
         tablePanel.add(scrollPane, BorderLayout.CENTER);
 
@@ -273,14 +281,30 @@ public class SharedDataModelUi extends JFrame {
                 if (d.height > tablePanel.getMinimumSize().height) {
                     tablePanel.setPreferredSize(d);
                 }
-                SharedDataModelUi.layoutTablePanel(rootJTables, tablePanel, 60, 50);
+                SharedDataModelUi.setBoundsInParent(tablePanel, rootJTables, DEFAULT_TABLE_PANEL_TOP, DEFAULT_TABLE_PANEL_LEFT);
             }
         });
 
-        SharedDataModelUi.layoutTablePanel(rootJTables, tablePanel, 60, 50);
-        // save TablePanel minimum size.
+        SharedDataModelUi.setBoundsInParent(tablePanel, rootJTables, DEFAULT_TABLE_PANEL_TOP, DEFAULT_TABLE_PANEL_LEFT);
+
+        // Save TablePanel minimum size.
         tablePanel.setMinimumSize(tablePanel.getPreferredSize());
-        
+
+        // Reflect resizing of rootPanel.
+        rootJTables.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                int tablePreferredWidth = rootJTables.getWidth() - tablePanel.getLocation().x;
+                // If not in TABLE_PANEL_COMPACT_LAYOUT mode, vertical ScrollBars are within last column
+                // and so ScrollBar width is just ignored here.
+                if (TABLE_PANEL_COMPACT_LAYOUT && scrollPane.getVerticalScrollBar().isVisible()) {
+                    tablePreferredWidth -= scrollPane.getVerticalScrollBar().getWidth();
+                }
+                table.setPreferredWidth(tablePreferredWidth);
+                SharedDataModelUi.setBoundsInParent(tablePanel, rootJTables, DEFAULT_TABLE_PANEL_TOP, DEFAULT_TABLE_PANEL_LEFT);
+            }
+        });
+
         rootJTables.add(tablePanel);
         tabPane.add("Table", rootJTables);
     }

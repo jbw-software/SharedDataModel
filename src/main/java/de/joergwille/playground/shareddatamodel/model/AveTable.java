@@ -11,9 +11,9 @@ import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 /**
@@ -28,6 +28,8 @@ public class AveTable extends JTable {
 
     private static final long serialVersionUID = 1L;
     private static final int DEFAULT_VISIBLE_ROW_COUNT = 1;
+    private final MinMaxWidthHeaderRenderer minWidthHeaderRenderer;
+    private boolean autoResizeMode; // hides field in JTable
     private int visibleRowCount;
     private int viewportHeightMargin;
 
@@ -47,6 +49,7 @@ public class AveTable extends JTable {
         super(tableModel);
         this.visibleRowCount = visibleRowCount >= 0 ? visibleRowCount : tableModel.getRowCount();
         this.viewportHeightMargin = viewportHeightMargin;
+        this.minWidthHeaderRenderer = new MinMaxWidthHeaderRenderer(this, columnHeaderPadding);
 
         // JTable uses some default values for PreferredScrollableViewportSize. Do not use these.
         super.setPreferredScrollableViewportSize(null);
@@ -65,7 +68,31 @@ public class AveTable extends JTable {
         super.setDefaultEditor(AveUpdatableSelection.class, AveChoiceElementCellEditor.getInstance());
 
         // Configure renderer for ColumnHeaders.
-        super.getTableHeader().setDefaultRenderer(new MinWidthHeaderRenderer(this, columnHeaderPadding));
+        super.getTableHeader().setDefaultRenderer(this.minWidthHeaderRenderer);
+    }
+
+    /**
+     * Computes the size of the viewport needed to display
+     * <code>visibleRowCount</code> number of rows and accomodate all columns
+     * rows.
+     *
+     * @return a dimension containing the size of the viewport needed to display
+     * <code>visibleRowCount</code> rows and all columns
+     */
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+
+        // Just in case someone has set PreferredScrollableViewportSize manually, use it.
+        if (super.getPreferredScrollableViewportSize() != null) {
+            return super.getPreferredScrollableViewportSize();
+        }
+
+        final Dimension preferredSize = super.getPreferredSize();
+        final Insets insets = getInsets();
+        int insetsAndMargin = insets.top + insets.bottom + this.viewportHeightMargin;
+        preferredSize.height = this.getVisibleRowCount() * super.getRowHeight() + insetsAndMargin;
+//        preferredSize.width = super.getColumnModel().getTotalColumnWidth();
+        return preferredSize;
     }
 
     /**
@@ -105,42 +132,38 @@ public class AveTable extends JTable {
         this.viewportHeightMargin = viewportHeightMargin;
     }
 
-    /**
-     * Computes the size of the viewport needed to display
-     * <code>visibleRowCount</code> number of rows and accomodate all columns
-     * rows.
-     *
-     * @return a dimension containing the size of the viewport needed to display
-     * <code>visibleRowCount</code> rows and all columns
-     */
-    @Override
-    public Dimension getPreferredScrollableViewportSize() {
-
-        // Just in case someone has set PreferredScrollableViewportSize manually, use it.
-        if (super.getPreferredScrollableViewportSize() != null) {
-            return super.getPreferredScrollableViewportSize();
-        }
-
-        final Dimension preferredSize = super.getPreferredSize();
-        final Insets insets = getInsets();
-        int insetsAndMargin = insets.top + insets.bottom + this.viewportHeightMargin;
-        preferredSize.height = this.getVisibleRowCount() * super.getRowHeight() + insetsAndMargin;
-//        preferredSize.width = super.getColumnModel().getTotalColumnWidth();
-        return preferredSize;
+    public boolean isAutoResizeMode() {
+        return autoResizeMode;
     }
 
-    private static class MinWidthHeaderRenderer implements TableCellRenderer {
+    public void setAutoResizeMode(boolean autoResizeMode) {
+        this.autoResizeMode = autoResizeMode;
+        this.minWidthHeaderRenderer.setAutoResizeMode(autoResizeMode);
+        // Disable column resizing if a fixed width is being set.
+        super.getTableHeader().setResizingAllowed(!autoResizeMode);
+    }
 
-        final DefaultTableCellRenderer renderer;
-        int columnPadding;
+    public void setPreferredWidth(int preferredWidth) {
+        this.minWidthHeaderRenderer.setTotalPreferredWidth(preferredWidth);
+    }
 
-        public MinWidthHeaderRenderer(final JTable table, int columnPadding) {
+    private static class MinMaxWidthHeaderRenderer implements TableCellRenderer {
+
+        private final JTable table;
+        private final DefaultTableCellRenderer renderer;
+        private final int columnPadding;
+        private int totalPreferredWidth;
+        private boolean autoResizeMode;
+
+        public MinMaxWidthHeaderRenderer(final JTable table, int columnPadding) {
+            this.table = table;
             this.renderer = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
-            
+
             // Have the header label be in the center of column.
             renderer.setHorizontalAlignment(JLabel.CENTER);
-            
+
             this.columnPadding = columnPadding;
+            this.totalPreferredWidth = -1;
         }
 
         @Override
@@ -148,15 +171,55 @@ public class AveTable extends JTable {
                 JTable table, Object value, boolean isSelected,
                 boolean hasFocus, int row, int column) {
             final Component component = renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            final DefaultTableColumnModel colModel = (DefaultTableColumnModel) table.getColumnModel();
-            final TableColumn tableColumn = colModel.getColumn(column);
+            final TableColumnModel columnModel = table.getColumnModel();
+            final TableColumn tableColumn = columnModel.getColumn(column);
 
+            // Set minimum width on first rendering.
             int minColumnWidth = component.getPreferredSize().width + (2 * this.columnPadding);
             if (tableColumn.getWidth() < minColumnWidth) {
                 tableColumn.setMinWidth(minColumnWidth);
             }
 
+            // If autoResizeMode and preferredWidth is being set, dynamically change last column width up to totalPreferredWidth.
+            if (this.autoResizeMode && this.totalPreferredWidth >= 0
+                    && column == (columnModel.getColumnCount() - 1)
+                    && table.getTableHeader().getResizingColumn() == null
+                    && columnModel.getTotalColumnWidth() != this.totalPreferredWidth) {
+                int deltaWidth = this.totalPreferredWidth - columnModel.getTotalColumnWidth();
+                tableColumn.setPreferredWidth(deltaWidth + tableColumn.getPreferredWidth());
+            }
+            
+            if (!this.autoResizeMode && this.totalPreferredWidth >= 0
+                    && table.getTableHeader().getResizingColumn() == tableColumn
+                    && columnModel.getTotalColumnWidth() > this.totalPreferredWidth) {
+                System.out.println("Set column " + column + " max width = " + tableColumn.getWidth());
+                tableColumn.setMaxWidth(tableColumn.getWidth());
+            }
+            
             return component;
+        }
+
+        public void setTotalPreferredWidth(int totalPreferredWidth) {
+            final TableColumnModel columnModel = this.table.getColumnModel();
+            if (!this.autoResizeMode) {
+                if (totalPreferredWidth > this.totalPreferredWidth) {
+                    // Reset all columns maxWidth value.
+                    for (int i = 0; i < columnModel.getColumnCount(); i++) {
+                        columnModel.getColumn(i).setMaxWidth(Integer.MAX_VALUE);
+                    }
+                } else if (columnModel.getTotalColumnWidth() > totalPreferredWidth) {
+                    // Reset all columns preferredWidth to MinWidth.
+                    for (int i = 0; i < columnModel.getColumnCount(); i++) {
+                        columnModel.getColumn(i).setPreferredWidth(columnModel.getColumn(i).getMinWidth());
+                    }
+                }
+            }
+
+            this.totalPreferredWidth = totalPreferredWidth;
+        }
+
+        public void setAutoResizeMode(boolean autoResizeMode) {
+            this.autoResizeMode = autoResizeMode;
         }
     }
 }
