@@ -95,6 +95,11 @@ public class AveTable extends JTable {
         return preferredSize;
     }
 
+    @Override
+    public AveTableModel getModel() {
+        return (AveTableModel) super.getModel();
+    }
+    
     /**
      * Sets the preferred number of rows in the table that can be displayed
      * without a scrollbar, as determined by the nearest <code>JViewport</code>
@@ -192,7 +197,6 @@ public class AveTable extends JTable {
             if (!this.autoResizeMode && this.totalPreferredWidth >= 0
                     && table.getTableHeader().getResizingColumn() == tableColumn
                     && columnModel.getTotalColumnWidth() > this.totalPreferredWidth) {
-                System.out.println("Set column " + column + " max width = " + tableColumn.getWidth());
                 tableColumn.setMaxWidth(tableColumn.getWidth());
             }
             

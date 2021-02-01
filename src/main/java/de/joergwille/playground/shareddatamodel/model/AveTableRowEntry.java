@@ -36,11 +36,11 @@ public class AveTableRowEntry {
         return classes;
     }
     
-    public AveTableRowEntry(String[] columnTypes, AveSharedDataModel<String>[] choiceModels) {
+    public AveTableRowEntry(final String[] columnTypes, final AveSharedDataModel<String>[] choiceModels) {
       this(columnTypes, choiceModels, null);
     }
     
-    public AveTableRowEntry(String[] columnTypes, AveSharedDataModel<String>[] choiceModels, String[] defaultValues) {
+    public AveTableRowEntry(final String[] columnTypes, final AveSharedDataModel<String>[] choiceModels, final String[] defaultValues) {
         Class<?>[] classes = columnTypesToClasses(columnTypes);
         
         if (defaultValues != null && defaultValues.length > 0 && 
