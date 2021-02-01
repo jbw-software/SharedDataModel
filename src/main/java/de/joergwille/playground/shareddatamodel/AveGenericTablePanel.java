@@ -141,7 +141,7 @@ public class AveGenericTablePanel extends JPanel {
 
         // Depending on layoutMode, vertical ScrollBars are either within last column or added to the right side.
         if (LayoutMode.COMPACT.equals(getLayoutMode()) && this.scrollPane.getVerticalScrollBar().isVisible()) {
-            d.width += scrollPane.getVerticalScrollBar().getWidth();
+            d.width += this.scrollPane.getVerticalScrollBar().getWidth();
         }
         tablePanel.setPreferredSize(d);
         AveGenericTablePanel.setBoundsInParent(tablePanel, this, DEFAULT_TABLE_PANEL_TOP, DEFAULT_TABLE_PANEL_LEFT);
@@ -177,12 +177,11 @@ public class AveGenericTablePanel extends JPanel {
         @Override
         public void componentResized(ComponentEvent e) {
             int tablePreferredWidth = this.rootPanel.getWidth() - this.tablePanel.getLocation().x;
-            // If layoutMode is "compact", vertical ScrollBars width can add extra width to the tablePreferredWidth.
-            if (LayoutMode.COMPACT.equals(this.layoutMode) && this.scrollPane.getVerticalScrollBar().isVisible()) {
+            // If layoutMode is "compact", vertical ScrollBars can add extra width to the tablePreferredWidth.
+            if (LayoutMode.COMPACT.equals(this.layoutMode)) {
                 tablePreferredWidth -= this.scrollPane.getVerticalScrollBar().getWidth();
             }
             this.table.setPreferredWidth(tablePreferredWidth);
-//            AveGenericTablePanel.setBoundsInParent(tablePanel, this.rootPanel, DEFAULT_TABLE_PANEL_TOP, DEFAULT_TABLE_PANEL_LEFT);
         }
     }
 
