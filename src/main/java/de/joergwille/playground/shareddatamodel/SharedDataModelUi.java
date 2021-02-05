@@ -1,6 +1,6 @@
 package de.joergwille.playground.shareddatamodel;
 
-import de.joergwille.playground.shareddatamodel.AveGenericTablePanel.LayoutMode;
+import de.joergwille.playground.shareddatamodel.AveTablePanel.LayoutMode;
 import de.joergwille.playground.shareddatamodel.model.AveChoiceElement;
 import de.joergwille.playground.shareddatamodel.model.AveSharedComboBoxModel;
 import de.joergwille.playground.shareddatamodel.model.AveSharedDataModel;
@@ -31,12 +31,6 @@ public class SharedDataModelUi extends JFrame {
     private static final long serialVersionUID = 1L;
     private static final String[] items = {"None1", "Spring", "Summer", "Fall", "Winter"};
     private static final String[] updatedItems = {"None2", "Frühling", "Sommer", "Winter", "Herbst", "EinGanzLangerStringMitSehrVielenBuchstaben"};
-    private static final int MIN_VISIBLE_ROW_COUNT = 3;
-    private static final int DEFAULT_VIEWPORT_HEIGHT_MARGIN = 10;
-    private static final int DEFAULT_COLUMN_HEADER_PADDING = 10;
-    private static final int DEFAULT_TABLE_PANEL_TOP = 60;
-    private static final int DEFAULT_TABLE_PANEL_LEFT = 50;
-    private static final boolean DEFAULT_TABLE_PANEL_LAYOUT_IS_COMPACT = true;
     private static final LayoutMode DEFAULT_LAYOUT_MODE = LayoutMode.COMPACT;
 
     //The one & only sharedDataModel for both JComboBoxes
@@ -201,7 +195,7 @@ public class SharedDataModelUi extends JFrame {
         final JPanel rootJTables = new JPanel(null);
         rootJTables.setLayout(new BoxLayout(rootJTables, BoxLayout.Y_AXIS));
 
-        final AveGenericTablePanel[] aveGenericTablePanel = new AveGenericTablePanel[1];
+        final AveTablePanel[] aveGenericTablePanel = new AveTablePanel[1];
         final JButton toggleCompactModeButton = new JButton("Create CompactMode");
         rootJTables.add(toggleCompactModeButton);
 
@@ -212,12 +206,13 @@ public class SharedDataModelUi extends JFrame {
                 layoutMode = (layoutMode.ordinal() == 0) ? LayoutMode.LAST_COLUMN_FILL_WIDTH : LayoutMode.COMPACT;
                 rootJTables.remove(aveGenericTablePanel[0]);
             }
-            aveGenericTablePanel[0] = new AveGenericTablePanel(layoutMode, tableModel, columnTypes, choiceModels);
+            aveGenericTablePanel[0] = new AveTablePanel(layoutMode, tableModel, columnTypes, choiceModels);
+            System.err.println("tablePanel height=" + aveGenericTablePanel[0].getMinimumSize().height + ", tablePanel width=" + aveGenericTablePanel[0].getMinimumSize().width);
             rootJTables.add(aveGenericTablePanel[0]);
 
             String toggledlayoutModeText = (layoutMode.ordinal() == 0) ? "Switch to LastColumnFillMode" : "Switch to CompactMode";
             toggleCompactModeButton.setText(toggledlayoutModeText);
-            rootJTables.validate();
+//            rootJTables.validate();
         });
 
         tabPane.add("Table", rootJTables);

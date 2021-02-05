@@ -24,7 +24,7 @@ import javax.swing.event.ChangeListener;
  * @author joerg
  */
 @SuppressWarnings("serial")
-public class AveGenericTablePanel extends JPanel {
+public class AveTablePanel extends JPanel {
 
     private static final int MIN_VISIBLE_ROW_COUNT = 3;
     private static final int DEFAULT_VIEWPORT_HEIGHT_MARGIN = 10;
@@ -38,14 +38,14 @@ public class AveGenericTablePanel extends JPanel {
 
     private final AveTable table;
     private final JPanel tablePanel;
-    final JPanel buttonsPanel;
+    private final JPanel buttonsPanel;
     private final JScrollPane scrollPane;
     private final ComponentAdapter rootPanelResizedAdapter;
     private final MouseAdapter buttonsPanelMousePressedAdapter;
     private final MouseMotionAdapter buttonsPanelMouseDraggedAdapter;
     private final ChangeListener viewportChangeListener;
 
-    public AveGenericTablePanel(final LayoutMode layoutMode, final AveTableModel tableModel, final String[] columnTypes, final AveSharedDataModel<String>[] choiceModels) {
+    public AveTablePanel(final LayoutMode layoutMode, final AveTableModel tableModel, final String[] columnTypes, final AveSharedDataModel<String>[] choiceModels) {
         // Use absolute positioning for "compact" layout.
         super(null);
         super.setBackground(Color.BLUE);
@@ -59,6 +59,7 @@ public class AveGenericTablePanel extends JPanel {
         // Table initialisation and configuration
         this.table = new AveTable(tableModel, MIN_VISIBLE_ROW_COUNT, DEFAULT_COLUMN_HEADER_PADDING, DEFAULT_VIEWPORT_HEIGHT_MARGIN);
         table.setRowHeight(35);
+//        table.setViewportHeightMargin(table.getRowHeight()/2);
         table.setAutoResizeMode(LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(this.layoutMode));
 
         // A Panel for table, add- and remove-button.
@@ -127,7 +128,7 @@ public class AveGenericTablePanel extends JPanel {
         this.add(tablePanel);
         
         // Layout UI with absolute positions
-        AveGenericTablePanel.setBoundsInParent(tablePanel, this, DEFAULT_TABLE_PANEL_TOP, DEFAULT_TABLE_PANEL_LEFT);
+        AveTablePanel.setBoundsInParent(tablePanel, this, DEFAULT_TABLE_PANEL_TOP, DEFAULT_TABLE_PANEL_LEFT);
 
         // Save TablePanel minimum size.
         tablePanel.setMinimumSize(tablePanel.getPreferredSize());
@@ -144,7 +145,7 @@ public class AveGenericTablePanel extends JPanel {
             d.width += this.scrollPane.getVerticalScrollBar().getWidth();
         }
         tablePanel.setPreferredSize(d);
-        AveGenericTablePanel.setBoundsInParent(tablePanel, this, DEFAULT_TABLE_PANEL_TOP, DEFAULT_TABLE_PANEL_LEFT);
+        AveTablePanel.setBoundsInParent(tablePanel, this, DEFAULT_TABLE_PANEL_TOP, DEFAULT_TABLE_PANEL_LEFT);
     }
 
     public LayoutMode getLayoutMode() {
@@ -152,9 +153,9 @@ public class AveGenericTablePanel extends JPanel {
     }
 
     private static void setBoundsInParent(final JPanel childPanel, final JPanel parentPanel, int topPosition, int leftPosition) {
-        final Insets parentInsets = parentPanel.getInsets();
+        final Insets insets = childPanel.getInsets();
         final Dimension size = childPanel.getPreferredSize();
-        childPanel.setBounds(parentInsets.left + leftPosition, parentInsets.top + topPosition, size.width, size.height);
+        childPanel.setBounds(insets.left + leftPosition, insets.top + topPosition, size.width, size.height);
         parentPanel.validate();
     }
 
@@ -225,7 +226,7 @@ public class AveGenericTablePanel extends JPanel {
             if (d.height > tablePanel.getMinimumSize().height) {
                 tablePanel.setPreferredSize(d);
             }
-            AveGenericTablePanel.setBoundsInParent(tablePanel, rootPanel, DEFAULT_TABLE_PANEL_TOP, DEFAULT_TABLE_PANEL_LEFT);
+            AveTablePanel.setBoundsInParent(tablePanel, rootPanel, DEFAULT_TABLE_PANEL_TOP, DEFAULT_TABLE_PANEL_LEFT);
         }
     }
 

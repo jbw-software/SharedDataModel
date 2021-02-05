@@ -70,7 +70,7 @@ public class AveTable extends JTable {
         // Configure renderer for ColumnHeaders.
         super.getTableHeader().setDefaultRenderer(this.minWidthHeaderRenderer);
     }
-
+    
     /**
      * Computes the size of the viewport needed to display
      * <code>visibleRowCount</code> number of rows and accomodate all columns
@@ -81,18 +81,15 @@ public class AveTable extends JTable {
      */
     @Override
     public Dimension getPreferredScrollableViewportSize() {
-
         // Just in case someone has set PreferredScrollableViewportSize manually, use it.
         if (super.getPreferredScrollableViewportSize() != null) {
             return super.getPreferredScrollableViewportSize();
         }
 
-        final Dimension preferredSize = super.getPreferredSize();
-        final Insets insets = getInsets();
-        int insetsAndMargin = insets.top + insets.bottom + this.viewportHeightMargin;
-        preferredSize.height = this.getVisibleRowCount() * super.getRowHeight() + insetsAndMargin;
-//        preferredSize.width = super.getColumnModel().getTotalColumnWidth();
-        return preferredSize;
+        final Dimension currentPrefSize = super.getPreferredSize();
+        int tableOutsideHeight = this.getTableHeader().getPreferredSize().height + this.viewportHeightMargin;
+        currentPrefSize.height = (this.getVisibleRowCount() * super.getRowHeight()) + tableOutsideHeight;
+        return currentPrefSize;
     }
 
     @Override
