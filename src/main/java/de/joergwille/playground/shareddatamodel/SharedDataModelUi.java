@@ -1,11 +1,11 @@
 package de.joergwille.playground.shareddatamodel;
 
-import de.joergwille.playground.shareddatamodel.AveTablePanel.LayoutMode;
-import de.joergwille.playground.shareddatamodel.model.AveChoiceElement;
-import de.joergwille.playground.shareddatamodel.model.AveSharedComboBoxModel;
-import de.joergwille.playground.shareddatamodel.model.AveSharedDataModel;
-import de.joergwille.playground.shareddatamodel.model.AveTableModel;
-import de.joergwille.playground.shareddatamodel.model.AveTableRowEntry;
+import de.joergwille.playground.shareddatamodel.swing.AveTablePanel.LayoutMode;
+import de.joergwille.playground.shareddatamodel.swing.model.AveChoiceElement;
+import de.joergwille.playground.shareddatamodel.swing.model.AveSharedComboBoxModel;
+import de.joergwille.playground.shareddatamodel.swing.model.AveSharedDataModel;
+import de.joergwille.playground.shareddatamodel.swing.model.AveTableModel;
+import de.joergwille.playground.shareddatamodel.swing.model.AveTableRowEntry;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -31,7 +31,6 @@ public class SharedDataModelUi extends JFrame {
     private static final long serialVersionUID = 1L;
     private static final String[] items = {"None1", "Spring", "Summer", "Fall", "Winter"};
     private static final String[] updatedItems = {"None2", "Frühling", "Sommer", "Winter", "Herbst", "EinGanzLangerStringMitSehrVielenBuchstaben"};
-    private static final LayoutMode DEFAULT_LAYOUT_MODE = LayoutMode.COMPACT;
 
     //The one & only sharedDataModel for both JComboBoxes
     final AveSharedDataModel<String> sharedDataModel;
@@ -195,25 +194,24 @@ public class SharedDataModelUi extends JFrame {
         final JPanel rootJTables = new JPanel(null);
         rootJTables.setLayout(new BoxLayout(rootJTables, BoxLayout.Y_AXIS));
 
-        final AveTablePanel[] aveGenericTablePanel = new AveTablePanel[1];
-        final JButton toggleCompactModeButton = new JButton("Create CompactMode");
-        rootJTables.add(toggleCompactModeButton);
+//        final AveGenericTablePanel[] aveGenericTablePanel = new AveGenericTablePanel[1];
+//        final JButton toggleCompactModeButton = new JButton("Create CompactMode");
+//        rootJTables.add(toggleCompactModeButton);
 
-        toggleCompactModeButton.addActionListener(a -> {
-            LayoutMode layoutMode = DEFAULT_LAYOUT_MODE;
-            if (aveGenericTablePanel[0] != null) {
-                layoutMode = aveGenericTablePanel[0].getLayoutMode();
-                layoutMode = (layoutMode.ordinal() == 0) ? LayoutMode.LAST_COLUMN_FILL_WIDTH : LayoutMode.COMPACT;
-                rootJTables.remove(aveGenericTablePanel[0]);
-            }
-            aveGenericTablePanel[0] = new AveTablePanel(layoutMode, tableModel, columnTypes, choiceModels);
-            System.err.println("tablePanel height=" + aveGenericTablePanel[0].getMinimumSize().height + ", tablePanel width=" + aveGenericTablePanel[0].getMinimumSize().width);
-            rootJTables.add(aveGenericTablePanel[0]);
-
-            String toggledlayoutModeText = (layoutMode.ordinal() == 0) ? "Switch to LastColumnFillMode" : "Switch to CompactMode";
-            toggleCompactModeButton.setText(toggledlayoutModeText);
+//        toggleCompactModeButton.addActionListener(a -> {
+//            LayoutMode layoutMode = DEFAULT_LAYOUT_MODE;
+//            if (aveGenericTablePanel[0] != null) {
+//                layoutMode = aveGenericTablePanel[0].getLayoutMode();
+//                layoutMode = (layoutMode.ordinal() == 0) ? LayoutMode.LAST_COLUMN_FILL_WIDTH : LayoutMode.COMPACT;
+//                rootJTables.remove(aveGenericTablePanel[0]);
+//            }
+//            aveGenericTablePanel[0] = new AveGenericTablePanel(layoutMode, tableModel, columnTypes, choiceModels);
+//            rootJTables.add(aveGenericTablePanel[0]);
+//
+//            String toggledlayoutModeText = (layoutMode.ordinal() == 0) ? "Switch to LastColumnFillMode" : "Switch to CompactMode";
+//            toggleCompactModeButton.setText(toggledlayoutModeText);
 //            rootJTables.validate();
-        });
+//        });
 
         tabPane.add("Table", rootJTables);
     }
