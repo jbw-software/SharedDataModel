@@ -18,6 +18,7 @@ import javax.swing.table.TableModel;
  * Using org.jdesktop.swingx.JXTable would be good alternative. For now using
  * workaround suggested here: https://bugs.openjdk.java.net/browse/JDK-4901352
  */
+@SuppressWarnings("serial")
 public class AveTable extends JTable {
 
     /**
@@ -183,7 +184,7 @@ public class AveTable extends JTable {
             // Set minimum width on first rendering.
             int minColumnWidth = component.getPreferredSize().width + (2 * this.columnPadding);
 
-            // Make sure that the witdh of all columns is at least as wide as the totalMinimumWidth,
+            // Make sure that the width of all columns is at least as wide as the totalMinimumWidth,
             // which might have been set externally (e.g. because add- and remove buttons need more space).
             if (columnModel.getTotalColumnWidth() < this.totalMinimumWidth
                     && column == (columnModel.getColumnCount() - 1) ) {
@@ -195,19 +196,19 @@ public class AveTable extends JTable {
            
 
             // If autoResizeMode and preferredWidth is being set, dynamically change last column width up to totalPreferredWidth.
-            if (this.autoResizeMode && this.totalPreferredWidth >= 0
-                    && column == (columnModel.getColumnCount() - 1)
-                    && table.getTableHeader().getResizingColumn() == null
-                    && columnModel.getTotalColumnWidth() != this.totalPreferredWidth) {
-                int deltaWidth = this.totalPreferredWidth - columnModel.getTotalColumnWidth();
-                tableColumn.setPreferredWidth(deltaWidth + tableColumn.getPreferredWidth());
-            }
+//            if (this.autoResizeMode && this.totalPreferredWidth >= 0
+//                    && column == (columnModel.getColumnCount() - 1)
+//                    && table.getTableHeader().getResizingColumn() == null
+//                    && columnModel.getTotalColumnWidth() != this.totalPreferredWidth) {
+//                int deltaWidth = this.totalPreferredWidth - columnModel.getTotalColumnWidth();
+//                tableColumn.setPreferredWidth(deltaWidth + tableColumn.getPreferredWidth());
+//            }
             
-            if (!this.autoResizeMode && this.totalPreferredWidth >= 0
-                    && table.getTableHeader().getResizingColumn() == tableColumn
-                    && columnModel.getTotalColumnWidth() > this.totalPreferredWidth) {
-                tableColumn.setMaxWidth(tableColumn.getWidth());
-            }
+//            if (!this.autoResizeMode && this.totalPreferredWidth >= 0
+//                    && table.getTableHeader().getResizingColumn() == tableColumn
+//                    && columnModel.getTotalColumnWidth() > this.totalPreferredWidth) {
+//                tableColumn.setMaxWidth(tableColumn.getWidth());
+//            }
             
             return component;
         }
@@ -218,19 +219,19 @@ public class AveTable extends JTable {
         
         public void setTotalPreferredWidth(int totalPreferredWidth) {
             final TableColumnModel columnModel = this.table.getColumnModel();
-            if (!this.autoResizeMode) {
-                if (totalPreferredWidth > this.totalPreferredWidth) {
-                    // Reset all columns maxWidth value.
-                    for (int i = 0; i < columnModel.getColumnCount(); i++) {
-                        columnModel.getColumn(i).setMaxWidth(Integer.MAX_VALUE);
-                    }
-                } else if (columnModel.getTotalColumnWidth() > totalPreferredWidth) {
-                    // Reset all columns preferredWidth to MinWidth.
-                    for (int i = 0; i < columnModel.getColumnCount(); i++) {
-                        columnModel.getColumn(i).setPreferredWidth(columnModel.getColumn(i).getMinWidth());
-                    }
-                }
-            }
+//            if (!this.autoResizeMode) {
+//                if (totalPreferredWidth > this.totalPreferredWidth) {
+//                    // Reset all columns maxWidth value.
+//                    for (int i = 0; i < columnModel.getColumnCount(); i++) {
+//                        columnModel.getColumn(i).setMaxWidth(Integer.MAX_VALUE);
+//                    }
+//                } else if (columnModel.getTotalColumnWidth() > totalPreferredWidth) {
+//                    // Reset all columns preferredWidth to MinWidth.
+//                    for (int i = 0; i < columnModel.getColumnCount(); i++) {
+//                        columnModel.getColumn(i).setPreferredWidth(columnModel.getColumn(i).getMinWidth());
+//                    }
+//                }
+//            }
 
             this.totalPreferredWidth = totalPreferredWidth;
         }

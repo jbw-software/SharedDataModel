@@ -1,5 +1,6 @@
 package de.joergwille.playground.shareddatamodel;
 
+import de.joergwille.playground.shareddatamodel.swing.AveTablePanel;
 import de.joergwille.playground.shareddatamodel.swing.model.AveChoiceElement;
 import de.joergwille.playground.shareddatamodel.swing.model.AveSharedComboBoxModel;
 import de.joergwille.playground.shareddatamodel.swing.model.AveSharedDataModel;
@@ -7,14 +8,11 @@ import de.joergwille.playground.shareddatamodel.swing.model.AveTableRowEntry;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -190,73 +188,33 @@ public class SharedDataModelUi extends JFrame {
 //      UI INITIALIZATION
         final JPanel rootJTables = new JPanel(new GridBagLayout());
         final GridBagConstraints gbc = new GridBagConstraints();
-        final String[] tableNames = new String[]{"BorderLayout", "CompactTablePane", "FilledWidthTablePane", "VectorPane"};
-        
-        final JPanel dummyPanel = new JPanel(new BorderLayout());
-        final JPanel psPanel = new JPanel();
-        psPanel.setPreferredSize(new Dimension(1, 30));
-        psPanel.setBackground(Color.RED);
-        dummyPanel.add(psPanel, BorderLayout.PAGE_START);
-        final JPanel lsPanel = new JPanel();
-        lsPanel.setPreferredSize(new Dimension(50, 1));
-        lsPanel.setBackground(Color.YELLOW);
-        dummyPanel.add(lsPanel, BorderLayout.LINE_START);
-        final JPanel cPanel = new JPanel();
-        cPanel.setPreferredSize(new Dimension(300, 60));
-        cPanel.setBackground(Color.GREEN);
-        dummyPanel.add(cPanel, BorderLayout.CENTER);
-        final JPanel lePanel = new JPanel();
-        lePanel.setPreferredSize(new Dimension(50, 1));
-        lePanel.setBackground(Color.ORANGE);
-        dummyPanel.add(lePanel, BorderLayout.LINE_END);
-        final JPanel pePanel = new JPanel();
-        pePanel.setPreferredSize(new Dimension(1, 30));
-        pePanel.setBackground(Color.BLUE);
-        dummyPanel.add(pePanel, BorderLayout.PAGE_END);
+        final String[] tableNames = new String[]{"CompactTablePane", "FilledWidthTablePane", "VectorPane"};
 
-        
-        dummyPanel.addMouseListener(new MouseAdapter() {
-
-            private void scale(float factor) {
-                int w = Math.round(dummyPanel.getPreferredSize().width * factor);
-                int h = Math.round(dummyPanel.getPreferredSize().height * factor);
-                dummyPanel.setMinimumSize(new Dimension(w, h));
-            }
-            
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON1) {
-                    scale(1.5f);
-                    rootJTables.validate();
-                }
-            }
-        });
-        
-        for (int i = 0; i < tableNames.length; i++) {
+        for (int i = 0; i < 1; i++) { // tableNames.length
             final JLabel label = new JLabel(tableNames[i]);
             SharedDataModelUi.updateGbc(gbc, 0, i);
             rootJTables.add(label, gbc);
   
-            final JPanel panel;
+            final AveTablePanel panel;
             switch (i) {
                 case 0:
-                    panel = dummyPanel;
+                    panel = new AveGenericTablePanel(columnNames, columnTypes, choiceModels, null);
                     break;
                 case 1:
                     panel = new AveGenericTablePanel(columnNames, columnTypes, choiceModels, null);
                     break;
                 case 2:
-                    panel = new AveGenericTablePanel(columnNames, columnTypes, choiceModels, null);
-                    break;
-                case 3:
                     panel = new AveVectorPanel(columnNames, columnTypes, choiceModels, null);
                     break;
                 default:
-                    panel = null;
+                    throw new IllegalArgumentException(); 
             }
             SharedDataModelUi.updateGbc(gbc, 1, i);
-            panel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2, true));
+            panel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1, true));
             rootJTables.add(panel, gbc);
+            
+            // This is not working yet
+            panel.setRowHeight(40);
         }
 
 //        final JPanel rootJTables = new JPanel(null);

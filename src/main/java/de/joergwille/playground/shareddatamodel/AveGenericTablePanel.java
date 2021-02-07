@@ -33,7 +33,7 @@ public class AveGenericTablePanel extends AveTablePanel {
      * The table is initially empty but maybe initialized using setContents.
      * On default the table has 0 minimum rows.
      *
-     * @param columnHeaders           The columnHeaders of the table, the number of entries defines the column dimension.
+     * @param columnHeaders    The columnHeaders of the table, the number of entries defines the column dimension.
      * @param columnTypes      A vector that specifies the sequence and the types for table columns.
      * @param choiceModels     A vector that has a reference to the model for columns with a comboBox.
      *                         The sequence of the vector must match the sequence of choice elements in vector <i>columnTypes</i>.
