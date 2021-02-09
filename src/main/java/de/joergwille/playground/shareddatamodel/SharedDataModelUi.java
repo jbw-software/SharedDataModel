@@ -213,7 +213,6 @@ public class SharedDataModelUi extends JFrame {
             panel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1, true));
             rootJTables.add(panel, gbc);
             
-            // This is not working yet
             panel.setRowHeight(40);
         }
 

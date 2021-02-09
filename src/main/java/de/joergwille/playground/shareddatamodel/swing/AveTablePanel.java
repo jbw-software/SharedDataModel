@@ -6,7 +6,7 @@ import de.joergwille.playground.shareddatamodel.swing.model.AveTableModel;
 import de.joergwille.playground.shareddatamodel.swing.model.AveTableRowEntry;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Rectangle;
+import java.awt.Insets;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
@@ -300,14 +300,14 @@ public abstract class AveTablePanel extends JPanel {
     }
 
     private void addListener() {
-        this.addComponentListener(this.rootPanelResizedAdapter);
+//        this.addComponentListener(this.rootPanelResizedAdapter);
         this.buttonsPanel.addMouseListener(this.buttonsPanelMousePressedAdapter);
         this.buttonsPanel.addMouseMotionListener(this.buttonsPanelMouseDraggedAdapter);
         this.scrollPane.getViewport().addChangeListener(this.viewportChangeListener);
     }
 
     private void removeListener() {
-        this.removeComponentListener(this.rootPanelResizedAdapter);
+//        this.removeComponentListener(this.rootPanelResizedAdapter);
         this.buttonsPanel.removeMouseListener(this.buttonsPanelMousePressedAdapter);
         this.buttonsPanel.removeMouseMotionListener(this.buttonsPanelMouseDraggedAdapter);
         this.scrollPane.getViewport().removeChangeListener(this.viewportChangeListener);
@@ -349,14 +349,7 @@ public abstract class AveTablePanel extends JPanel {
             this.scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         }
 
-        // Save TablePanel minimum size.
-        this.tablePanel.setMinimumSize(tablePanel.getPreferredSize());
-
-        // Layout UI with absolute positions
-        this.tablePanel.setBounds(DEFAULT_TABLE_PANEL_LEFT, DEFAULT_TABLE_PANEL_TOP, this.tablePanel.getPreferredSize().width, this.tablePanel.getPreferredSize().height);
-
         super.add(tablePanel);
-
         this.resize();
     }
 
@@ -364,31 +357,40 @@ public abstract class AveTablePanel extends JPanel {
         return this.tablePanel;
     }
 
+    private JScrollPane getScrollPane() {
+        return this.scrollPane;
+    }
+
     // Table columns width change dynamically and therefore the ViewPort changes.
     // To reflect these changes TablePanel needs to be layouted.
     private void viewportChanged(ChangeEvent event) {
-        final Rectangle currentBounds = this.tablePanel.getBounds();
-        final Dimension d = this.table.getPreferredScrollableViewportSize();
+        final Dimension scrollPaneViewPortSize = this.scrollPane.getViewport().getViewSize();
+        final Dimension scrollPaneSize = this.scrollPane.getPreferredSize();
+        if (scrollPaneViewPortSize.width != scrollPaneSize.width + this.scrollPane.getVerticalScrollBar().getWidth()) {
+            scrollPaneSize.width = scrollPaneViewPortSize.width;
 
-        // Depending on layoutMode, vertical ScrollBars are either within last column or added to the right side.
-        if (LayoutMode.COMPACT.equals(this.layoutMode) && this.scrollPane.getVerticalScrollBar().isVisible()) {
-            d.width += this.scrollPane.getVerticalScrollBar().getWidth();
+            // Depending on layoutMode, vertical ScrollBars are either within last column or added to the right side.
+            if (LayoutMode.COMPACT.equals(this.layoutMode) && this.scrollPane.getVerticalScrollBar().isVisible()) {
+                scrollPaneSize.width += this.scrollPane.getVerticalScrollBar().getWidth();
+            }
+
+            this.scrollPane.setPreferredSize(scrollPaneSize);
+            this.resize();
         }
-        
-        this.tablePanel.setBounds(currentBounds.x, currentBounds.y, d.width, currentBounds.height);
-        this.resize();
     }
 
     private void resize() {
-        
-        final Rectangle currentBounds = this.tablePanel.getBounds();
-        final Dimension currentDimension = new Dimension(currentBounds.width, currentBounds.height);
-        super.setPreferredSize(currentDimension);
-        System.out.println("AveTablePanel currentBounds w=" + currentBounds.width + ", h= " + currentBounds.height);
-//        super.invalidate();
-        if (getParent() != null) {
-//            getParent().setPreferredSize(null); // reset the parent's prefferedSize to have the parent repaint the child first.
-            getParent().revalidate();
+
+        final Dimension tablePanelSize = this.tablePanel.getPreferredSize();
+        final Insets insets = super.getInsets();
+        int w = tablePanelSize.width + insets.left + insets.right;
+        int h = tablePanelSize.height + insets.top + insets.bottom;
+
+        // Do absolute layout.
+        this.tablePanel.setBounds(DEFAULT_TABLE_PANEL_LEFT, DEFAULT_TABLE_PANEL_TOP, w, h);
+        super.setPreferredSize(new Dimension(w + DEFAULT_TABLE_PANEL_LEFT, h + DEFAULT_TABLE_PANEL_TOP));
+        if (super.getParent() != null) {
+            super.getParent().revalidate();
         }
     }
 
@@ -457,8 +459,9 @@ public abstract class AveTablePanel extends JPanel {
     public void setRowHeight(int rowHeight) {
         this.table.setRowHeight(rowHeight);
         this.scrollPane.getViewport().setPreferredSize(table.getPreferredScrollableViewportSize());
-//        ToDo viewportChanged muss auch die Höhe berücksichtigen
-        System.out.println("Funktioniert noch nicht!");
+
+        // Set ScrollPane minimum size.
+        this.scrollPane.setMinimumSize(this.scrollPane.getPreferredSize());
     }
 
     private static class RootPanelResizedAdapter extends ComponentAdapter {
@@ -521,14 +524,17 @@ public abstract class AveTablePanel extends JPanel {
             int yCurrent = event.getPoint().y;
             int dY = yCurrent - startPointY;
 
-            final Rectangle bounds = this.tablePanel.getBounds();
-            bounds.height += dY;
-
-            // Only change preferred height if greater then minimum height.
-            if (bounds.height > this.tablePanel.getMinimumSize().height) {
-                this.tablePanel.setBounds(bounds.x, bounds.y, bounds.width, bounds.height);
+            final JScrollPane scrollPane = aveTablePanel.getScrollPane();
+            if (scrollPane != null) {
+                final Dimension scrollPaneSize = scrollPane.getPreferredSize();
+                scrollPaneSize.height += dY;
+                if (scrollPaneSize.height > scrollPane.getMinimumSize().height) {
+                    scrollPane.setPreferredSize(scrollPaneSize);
+                    // Reset the parent's prefferedSize to have the parent layout itself.
+                    tablePanel.setPreferredSize(null);
+                    aveTablePanel.resize();
+                }
             }
-            aveTablePanel.resize();
         }
     }
 
