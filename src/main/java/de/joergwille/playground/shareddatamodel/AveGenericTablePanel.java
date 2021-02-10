@@ -25,7 +25,12 @@ public class AveGenericTablePanel extends AveTablePanel {
      */
     public AveGenericTablePanel(final String[] columnHeaders, final String[] columnTypes, final AveSharedDataModel<String>[] choiceModels,
             final String[] columnDefaults) {
-        this(columnHeaders, columnTypes, choiceModels, columnDefaults, 2);
+        this(columnHeaders, columnTypes, choiceModels, columnDefaults, 2, false);
+    }
+
+    public AveGenericTablePanel(final String[] columnHeaders, final String[] columnTypes, final AveSharedDataModel<String>[] choiceModels,
+            final String[] columnDefaults, final boolean locked) {
+        this(columnHeaders, columnTypes, choiceModels, columnDefaults, 2, locked);
     }
 
     /**
@@ -43,8 +48,8 @@ public class AveGenericTablePanel extends AveTablePanel {
      * @param initRowNbr       Defines the initial number of rows.
      */
     public AveGenericTablePanel(final String[] columnHeaders, final String[] columnTypes,
-            final AveSharedDataModel<String>[] choiceModels, final String[] columnDefaults, final int initRowNbr) {
-        this(columnHeaders, columnTypes, choiceModels, columnDefaults, initRowNbr, 0);
+            final AveSharedDataModel<String>[] choiceModels, final String[] columnDefaults, final int initRowNbr, final boolean locked) {
+        this(columnHeaders, columnTypes, choiceModels, columnDefaults, initRowNbr, 0, locked);
     }
 
     /**
@@ -63,8 +68,8 @@ public class AveGenericTablePanel extends AveTablePanel {
      */
     public AveGenericTablePanel(final String[] columnHeaders, final String[] columnTypes,
             final AveSharedDataModel<String>[] choiceModels, final String[] columnDefaults,
-            final int initRowNbr, final int minRowNbr) {
+            final int initRowNbr, final int minRowNbr, final boolean locked) {
         // columnHeaders, columnTypes, choiceModels, columnDefaults, initRowNbr, minNbrOfRows
-        super(columnHeaders, columnTypes, choiceModels, columnDefaults, initRowNbr, minRowNbr);
+        super(columnHeaders, columnTypes, choiceModels, columnDefaults, initRowNbr, minRowNbr, locked ? LayoutMode.LAST_COLUMN_FILL_WIDTH : LayoutMode.COMPACT);
     }
 }

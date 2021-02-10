@@ -7,10 +7,9 @@ import de.joergwille.playground.shareddatamodel.swing.model.AveTableRowEntry;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -50,7 +49,6 @@ public abstract class AveTablePanel extends JPanel {
     private final JPanel tablePanel;
     private final JPanel buttonsPanel;
     private final JScrollPane scrollPane;
-    private final ComponentAdapter rootPanelResizedAdapter;
     private final MouseInputListener buttonsPanelResizeListener;
     private final ChangeListener viewportChangeListener;
 
@@ -256,7 +254,8 @@ public abstract class AveTablePanel extends JPanel {
     public AveTablePanel(final String[] columnHeaders, final String[] columnTypes,
             final AveSharedDataModel<String>[] choiceModels, final String[] columnDefaults, final LayoutMode layoutMode,
             int initNbrOfRows, int minNbrOfRows, int minHeightInRows) {
-        super(null);
+        // Use absolute positioning or GridLayout for LAST_COLUMN_FILL_WIDTH layout.
+        super(LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(layoutMode) ? new GridLayout(1, 0) : null);
 
         this.columnTypes = columnTypes;
         this.choiceModels = choiceModels;
@@ -296,7 +295,6 @@ public abstract class AveTablePanel extends JPanel {
         this.scrollPane = new JScrollPane(table);
         this.viewportChangeListener = this::viewportChanged;
 
-        this.rootPanelResizedAdapter = new RootPanelResizedAdapter(this.table);
         this.initUI();
         this.addListener();
     }
@@ -307,9 +305,6 @@ public abstract class AveTablePanel extends JPanel {
             this.buttonsPanel.addMouseListener(this.buttonsPanelResizeListener);
             this.buttonsPanel.addMouseMotionListener(this.buttonsPanelResizeListener);
         }
-        if (LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(this.layoutMode)) {
-            this.addComponentListener(this.rootPanelResizedAdapter);
-        }
     }
 
     private void removeListener() {
@@ -317,9 +312,6 @@ public abstract class AveTablePanel extends JPanel {
         if (!LayoutMode.VECTOR.equals(this.layoutMode)) {
             this.buttonsPanel.removeMouseListener(this.buttonsPanelResizeListener);
             this.buttonsPanel.removeMouseMotionListener(this.buttonsPanelResizeListener);
-        }
-        if (LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(this.layoutMode)) {
-            this.removeComponentListener(this.rootPanelResizedAdapter);
         }
     }
 
@@ -486,24 +478,6 @@ public abstract class AveTablePanel extends JPanel {
 
         // Update ScrollPane minimum height.
         this.updateScrollPaneMinimumHeight();
-    }
-
-    private static class RootPanelResizedAdapter extends ComponentAdapter {
-
-        private final AveTable table;
-
-        public RootPanelResizedAdapter(AveTable table) {
-            this.table = table;
-        }
-
-        @Override
-        public void componentResized(ComponentEvent e) {
-
-            AveTablePanel aveTablePanel = (AveTablePanel) e.getComponent();
-            this.table.setPreferredWidth(aveTablePanel.getWidth() - 1);
-            aveTablePanel.revalidate();
-            aveTablePanel.repaint();
-        }
     }
 
     private static class ButtonsPanelMouseInputAdapter extends MouseInputAdapter {
