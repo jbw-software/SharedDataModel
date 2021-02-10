@@ -6,16 +6,15 @@ import de.joergwille.playground.shareddatamodel.swing.model.AveSharedComboBoxMod
 import de.joergwille.playground.shareddatamodel.swing.model.AveSharedDataModel;
 import de.joergwille.playground.shareddatamodel.swing.model.AveTableRowEntry;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.List;
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -178,73 +177,50 @@ public class SharedDataModelUi extends JFrame {
 //            tableData[i] = new AveTableRowEntry(columnTypes, choiceModels, defaultValues);
 //        }
 //      END OF TABEL DATA INITIALIZATION         
-
 //      TABLE MODEL INITIALIZATION
 //        final AveTableModel tableModel = new AveTableModel(columnNames);
 //        for (AveTableRowEntry rowData : tableData) {
 //            tableModel.addRow(rowData);
 //        }
-
 //      UI INITIALIZATION
         final JPanel rootJTables = new JPanel(new GridBagLayout());
         final GridBagConstraints gbc = new GridBagConstraints();
         final String[] tableNames = new String[]{"CompactTablePane", "FilledWidthTablePane", "VectorPane"};
 
-        for (int i = 0; i < 1; i++) { // tableNames.length
+        for (int i = 0; i < tableNames.length; i++) {
             final JLabel label = new JLabel(tableNames[i]);
             SharedDataModelUi.updateGbc(gbc, 0, i);
             rootJTables.add(label, gbc);
-  
+
             final AveTablePanel panel;
             switch (i) {
                 case 0:
+                    // LayoutMode.COMPACT
                     panel = new AveGenericTablePanel(columnNames, columnTypes, choiceModels, null);
                     break;
                 case 1:
-                    panel = new AveGenericTablePanel(columnNames, columnTypes, choiceModels, null);
+                    // LayoutMode.LAST_COLUMN_FILL_WIDTH
+                    panel = new AveGenericTablePanel(columnNames, columnTypes, choiceModels, null, true);
                     break;
                 case 2:
+                    // LayoutMode.VECTOR
                     panel = new AveVectorPanel(columnNames, columnTypes, choiceModels, null);
                     break;
                 default:
-                    throw new IllegalArgumentException(); 
+                    throw new IllegalArgumentException();
             }
             SharedDataModelUi.updateGbc(gbc, 1, i);
-            panel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1, true));
             rootJTables.add(panel, gbc);
-            
-            panel.setRowHeight(40);
+
+            panel.setRowHeight(30);
         }
 
-//        final JPanel rootJTables = new JPanel(null);
-//        rootJTables.setLayout(new BoxLayout(rootJTables, BoxLayout.Y_AXIS));
-//
-//        final AveGenericTablePanel[] aveGenericTablePanel = new AveGenericTablePanel[1];
-//        final JButton toggleCompactModeButton = new JButton("Create CompactMode");
-//        rootJTables.add(toggleCompactModeButton);
-//        toggleCompactModeButton.addActionListener(a -> {
-//            LayoutMode layoutMode = DEFAULT_LAYOUT_MODE;
-//            if (aveGenericTablePanel[0] != null) {
-//                layoutMode = aveGenericTablePanel[0].getLayoutMode();
-//                layoutMode = (layoutMode.ordinal() == 0) ? LayoutMode.LAST_COLUMN_FILL_WIDTH : LayoutMode.COMPACT;
-//                rootJTables.remove(aveGenericTablePanel[0]);
-//            }
-//            aveGenericTablePanel[0] = new AveGenericTablePanel(layoutMode, tableModel, columnTypes, choiceModels);
-//            rootJTables.add(aveGenericTablePanel[0]);
-//
-//            String toggledlayoutModeText = (layoutMode.ordinal() == 0) ? "Switch to LastColumnFillMode" : "Switch to CompactMode";
-//            toggleCompactModeButton.setText(toggledlayoutModeText);
-//            rootJTables.validate();
-//        });
-
         final JScrollPane scrollPane = new JScrollPane(rootJTables);
-
-
         tabPane.add("Table", scrollPane);
     }
 
-//    private static final Insets WEST_INSETS = new Insets(5, 0, 5, 5);
-//    private static final Insets EAST_INSETS = new Insets(5, 5, 5, 0);
+    private static final Insets WEST_INSETS = new Insets(5, 0, 5, 5);
+    private static final Insets EAST_INSETS = new Insets(5, 5, 5, 0);
 
     private static void updateGbc(final GridBagConstraints gbc, int x, int y) {
         gbc.gridx = x;
@@ -254,9 +230,9 @@ public class SharedDataModelUi extends JFrame {
 
         gbc.anchor = (x == 0) ? GridBagConstraints.WEST : GridBagConstraints.WEST;
         gbc.fill = (x == 0) ? GridBagConstraints.NONE
-                : GridBagConstraints.NONE;
+                : GridBagConstraints.HORIZONTAL;
 
-//        gbc.insets = (x == 0) ? WEST_INSETS : EAST_INSETS;
+        gbc.insets = (x == 0) ? WEST_INSETS : EAST_INSETS;
         gbc.weightx = (x == 0) ? 0.1 : 1.0;
         gbc.weighty = 1.0;
     }

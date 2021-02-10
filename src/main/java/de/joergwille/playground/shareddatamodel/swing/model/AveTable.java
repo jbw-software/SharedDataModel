@@ -22,10 +22,10 @@ import javax.swing.table.TableModel;
 public class AveTable extends JTable {
 
     /**
-     * The default value for height of the tables viewport in rows. 
+     * The default value for height of the tables viewport in rows.
      */
     public static final int DEFAULT_VISIBLE_ROW_COUNT = 1;
-    private final MinMaxWidthHeaderRenderer minWidthHeaderRenderer;
+    private final MinWidthHeaderRenderer minWidthHeaderRenderer;
     private boolean autoResizeMode; // hides field in JTable
     private int visibleRowCount;
     private int viewportHeightMargin;
@@ -46,7 +46,7 @@ public class AveTable extends JTable {
         super(tableModel);
         this.visibleRowCount = visibleRowCount >= 0 ? visibleRowCount : tableModel.getRowCount();
         this.viewportHeightMargin = viewportHeightMargin;
-        this.minWidthHeaderRenderer = new MinMaxWidthHeaderRenderer(this, columnHeaderPadding);
+        this.minWidthHeaderRenderer = new MinWidthHeaderRenderer(this, columnHeaderPadding);
 
         // JTable uses some default values for PreferredScrollableViewportSize. Do not use these.
         super.setPreferredScrollableViewportSize(null);
@@ -87,8 +87,7 @@ public class AveTable extends JTable {
         }
 
         final Dimension currentPrefSize = super.getPreferredSize();
-        int tableOutsideHeight = this.getTableHeader().getPreferredSize().height + this.viewportHeightMargin;
-        currentPrefSize.height = (this.getVisibleRowCount() * super.getRowHeight()) + tableOutsideHeight;
+        currentPrefSize.height = this.getVisibleRowCount() * super.getRowHeight();
         return currentPrefSize;
     }
 
@@ -96,7 +95,7 @@ public class AveTable extends JTable {
     public AveTableModel getModel() {
         return (AveTableModel) super.getModel();
     }
-    
+
     /**
      * Sets the preferred number of rows in the table that can be displayed
      * without a scrollbar, as determined by the nearest <code>JViewport</code>
@@ -153,7 +152,7 @@ public class AveTable extends JTable {
         this.minWidthHeaderRenderer.setTotalPreferredWidth(preferredWidth);
     }
 
-    private static class MinMaxWidthHeaderRenderer implements TableCellRenderer {
+    private static class MinWidthHeaderRenderer implements TableCellRenderer {
 
         private final JTable table;
         private final DefaultTableCellRenderer renderer;
@@ -162,7 +161,7 @@ public class AveTable extends JTable {
         private int totalPreferredWidth;
         private boolean autoResizeMode;
 
-        public MinMaxWidthHeaderRenderer(final JTable table, int columnPadding) {
+        public MinWidthHeaderRenderer(final JTable table, int columnPadding) {
             this.table = table;
             this.renderer = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
 
@@ -187,38 +186,36 @@ public class AveTable extends JTable {
             // Make sure that the width of all columns is at least as wide as the totalMinimumWidth,
             // which might have been set externally (e.g. because add- and remove buttons need more space).
             if (columnModel.getTotalColumnWidth() < this.totalMinimumWidth
-                    && column == (columnModel.getColumnCount() - 1) ) {
-                    minColumnWidth += this.totalMinimumWidth - columnModel.getTotalColumnWidth();
+                    && column == (columnModel.getColumnCount() - 1)) {
+                minColumnWidth += this.totalMinimumWidth - columnModel.getTotalColumnWidth();
             }
             if (tableColumn.getWidth() < minColumnWidth) {
                 tableColumn.setMinWidth(minColumnWidth);
             }
-           
 
             // If autoResizeMode and preferredWidth is being set, dynamically change last column width up to totalPreferredWidth.
-//            if (this.autoResizeMode && this.totalPreferredWidth >= 0
-//                    && column == (columnModel.getColumnCount() - 1)
-//                    && table.getTableHeader().getResizingColumn() == null
-//                    && columnModel.getTotalColumnWidth() != this.totalPreferredWidth) {
-//                int deltaWidth = this.totalPreferredWidth - columnModel.getTotalColumnWidth();
-//                tableColumn.setPreferredWidth(deltaWidth + tableColumn.getPreferredWidth());
-//            }
-            
+            if (this.autoResizeMode && this.totalPreferredWidth >= 0
+                    && column == (columnModel.getColumnCount() - 1)
+                    && table.getTableHeader().getResizingColumn() == null
+                    && columnModel.getTotalColumnWidth() != this.totalPreferredWidth) {
+                int deltaWidth = this.totalPreferredWidth - columnModel.getTotalColumnWidth();
+                tableColumn.setPreferredWidth(deltaWidth + tableColumn.getPreferredWidth());
+            }
+
 //            if (!this.autoResizeMode && this.totalPreferredWidth >= 0
 //                    && table.getTableHeader().getResizingColumn() == tableColumn
 //                    && columnModel.getTotalColumnWidth() > this.totalPreferredWidth) {
 //                tableColumn.setMaxWidth(tableColumn.getWidth());
 //            }
-            
             return component;
         }
 
         public void setTotalMinimumWidth(int totalMinimumWidth) {
             this.totalMinimumWidth = totalMinimumWidth;
         }
-        
+
         public void setTotalPreferredWidth(int totalPreferredWidth) {
-            final TableColumnModel columnModel = this.table.getColumnModel();
+//            final TableColumnModel columnModel = this.table.getColumnModel();
 //            if (!this.autoResizeMode) {
 //                if (totalPreferredWidth > this.totalPreferredWidth) {
 //                    // Reset all columns maxWidth value.
