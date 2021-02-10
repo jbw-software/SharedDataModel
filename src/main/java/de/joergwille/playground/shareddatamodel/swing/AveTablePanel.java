@@ -11,9 +11,7 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -21,6 +19,8 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.event.MouseInputListener;
 
 /**
  * Extends a JPanel and creates the view and layout as a base class for
@@ -51,9 +51,7 @@ public abstract class AveTablePanel extends JPanel {
     private final JPanel buttonsPanel;
     private final JScrollPane scrollPane;
     private final ComponentAdapter rootPanelResizedAdapter;
-//    private final ComponentAdapter parentResizedAdapter;
-    private final MouseAdapter buttonsPanelMousePressedAdapter;
-    private final MouseMotionAdapter buttonsPanelMouseDraggedAdapter;
+    private final MouseInputListener buttonsPanelResizeListener;
     private final ChangeListener viewportChangeListener;
 
     /**
@@ -292,9 +290,7 @@ public abstract class AveTablePanel extends JPanel {
 
         // A layout Panel for add- and remove-button.
         this.buttonsPanel = new JPanel(new BorderLayout());
-        this.buttonsPanelMousePressedAdapter = new ButtonsPanelMousePressedAdapter();
-        this.buttonsPanelMouseDraggedAdapter
-                = new ButtonsPanelMouseDraggedAdapter((ButtonsPanelMousePressedAdapter) this.buttonsPanelMousePressedAdapter, this);
+        this.buttonsPanelResizeListener = new ButtonsPanelMouseInputAdapter(this);
 
         // A ScrollPane for the table with horizontal scrollbars.
         this.scrollPane = new JScrollPane(table);
@@ -308,8 +304,8 @@ public abstract class AveTablePanel extends JPanel {
     private void addListener() {
         this.scrollPane.getViewport().addChangeListener(this.viewportChangeListener);
         if (!LayoutMode.VECTOR.equals(this.layoutMode)) {
-            this.buttonsPanel.addMouseListener(this.buttonsPanelMousePressedAdapter);
-            this.buttonsPanel.addMouseMotionListener(this.buttonsPanelMouseDraggedAdapter);
+            this.buttonsPanel.addMouseListener(this.buttonsPanelResizeListener);
+            this.buttonsPanel.addMouseMotionListener(this.buttonsPanelResizeListener);
         }
         if (LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(this.layoutMode)) {
             this.addComponentListener(this.rootPanelResizedAdapter);
@@ -319,8 +315,8 @@ public abstract class AveTablePanel extends JPanel {
     private void removeListener() {
         this.scrollPane.getViewport().removeChangeListener(this.viewportChangeListener);
         if (!LayoutMode.VECTOR.equals(this.layoutMode)) {
-            this.buttonsPanel.removeMouseListener(this.buttonsPanelMousePressedAdapter);
-            this.buttonsPanel.removeMouseMotionListener(this.buttonsPanelMouseDraggedAdapter);
+            this.buttonsPanel.removeMouseListener(this.buttonsPanelResizeListener);
+            this.buttonsPanel.removeMouseMotionListener(this.buttonsPanelResizeListener);
         }
         if (LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(this.layoutMode)) {
             this.removeComponentListener(this.rootPanelResizedAdapter);
@@ -337,16 +333,13 @@ public abstract class AveTablePanel extends JPanel {
 
         // Add- and remove button initialisation and configuration.
         if (!LayoutMode.VECTOR.equals(this.layoutMode)) {
-            this.buttonsPanel.setCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
             final JButton addRowButton = new JButton("Add");
-            addRowButton.setCursor(Cursor.getDefaultCursor());
             addRowButton.addActionListener(a -> {
                 SwingUtilities.invokeLater(() -> {
                     this.addRow();
                 });
             });
             final JButton removeRowButton = new JButton("Delete");
-            removeRowButton.setCursor(Cursor.getDefaultCursor());
             removeRowButton.addActionListener(a -> {
                 SwingUtilities.invokeLater(() -> {
                     this.removeSelectedRows();
@@ -513,32 +506,31 @@ public abstract class AveTablePanel extends JPanel {
         }
     }
 
-    private static class ButtonsPanelMousePressedAdapter extends MouseAdapter {
+    private static class ButtonsPanelMouseInputAdapter extends MouseInputAdapter {
 
-        private int pointY;
+        private final AveTablePanel aveTablePanel;
+
+        private int startPointY;
+
+        public ButtonsPanelMouseInputAdapter(final AveTablePanel aveTablePanel) {
+            this.aveTablePanel = aveTablePanel;
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+            this.aveTablePanel.setCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
+        }
+
+        @Override
+        public void mouseExited(MouseEvent mouseEvent) {
+            this.aveTablePanel.setCursor(Cursor.getDefaultCursor());
+        }
 
         @Override
         public void mousePressed(MouseEvent e) {
             if (e.getButton() == MouseEvent.BUTTON1) {
-                pointY = e.getPoint().y;
+                startPointY = e.getPoint().y;
             }
-        }
-
-        public int getPointY() {
-            return pointY;
-        }
-    }
-
-    private static class ButtonsPanelMouseDraggedAdapter extends MouseMotionAdapter {
-
-        private final int startPointY;
-        private final AveTablePanel aveTablePanel;
-        private final JPanel tablePanel;
-
-        public ButtonsPanelMouseDraggedAdapter(final ButtonsPanelMousePressedAdapter mousePressedAdapter, final AveTablePanel aveTablePanel) {
-            this.startPointY = mousePressedAdapter.getPointY();
-            this.aveTablePanel = aveTablePanel;
-            this.tablePanel = aveTablePanel.getTablePanel();
         }
 
         @Override
@@ -553,7 +545,7 @@ public abstract class AveTablePanel extends JPanel {
                 if (scrollPaneSize.height > scrollPane.getMinimumSize().height) {
                     scrollPane.setPreferredSize(scrollPaneSize);
                     // Reset the parent's prefferedSize to have the parent layout itself.
-                    tablePanel.setPreferredSize(null);
+                    aveTablePanel.getTablePanel().setPreferredSize(null);
                     aveTablePanel.resize();
                 }
             }
