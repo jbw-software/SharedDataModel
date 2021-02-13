@@ -5,15 +5,19 @@ import de.joergwille.playground.shareddatamodel.swing.model.AveTable;
 import de.joergwille.playground.shareddatamodel.swing.model.AveTableModel;
 import de.joergwille.playground.shareddatamodel.swing.model.AveTableRowEntry;
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -43,26 +47,29 @@ public abstract class AveTablePanel extends JPanel {
     private final String[] columnDefaults;
     private final LayoutMode layoutMode;
     private final int minNbrOfRows;
-
     private final AveTable table;
     private final AveTableModel tableModel;
     private final JPanel tablePanel;
     private final JPanel buttonsPanel;
+    private final JButton addRowButton;
+    private final JButton removeRowButton;
     private final JScrollPane scrollPane;
     private final MouseInputListener buttonsPanelResizeListener;
     private final ChangeListener viewportChangeListener;
+
+    private boolean autoCreateNewRowAfterLastEdit;
 
     /**
      * Creates a new instance of {@code AveTablePanel}. The table is initially
      * empty but maybe initialized using setContents.
      *
      * @param columnHeaders The columnHeaders of the table, the number of
-     * entries defines the column dimension.
-     * @param columnTypes A vector that specifies the sequence and the types for
-     * table columns.
-     * @param choiceModels A vector that has a reference to the model for
-     * columns with a comboBox. The sequence of the vector must match the
-     * sequence of choice elements in vector <i>columnTypes</i>.
+     *                      entries defines the column dimension.
+     * @param columnTypes   A vector that specifies the sequence and the types for
+     *                      table columns.
+     * @param choiceModels  A vector that has a reference to the model for
+     *                      columns with a comboBox. The sequence of the vector must match the
+     *                      sequence of choice elements in vector <i>columnTypes</i>.
      */
     public AveTablePanel(final String[] columnHeaders, final String[] columnTypes,
             final AveSharedDataModel<String>[] choiceModels) {
@@ -74,13 +81,13 @@ public abstract class AveTablePanel extends JPanel {
      * empty but maybe initialized using setContents.
      *
      * @param columnHeaders The columnHeaders of the table, the number of
-     * entries defines the column dimension.
-     * @param columnTypes A vector that specifies the sequence and the types for
-     * table columns.
-     * @param choiceModels A vector that has a reference to the model for
-     * columns with a comboBox. The sequence of the vector must match the
-     * sequence of choice elements in vector <i>columnTypes</i>.
-     * @param layoutMode Either <i>COMPACT</i>, <i>LAST_COLUMN_FILL_WIDTH</i> or
+     *                      entries defines the column dimension.
+     * @param columnTypes   A vector that specifies the sequence and the types for
+     *                      table columns.
+     * @param choiceModels  A vector that has a reference to the model for
+     *                      columns with a comboBox. The sequence of the vector must match the
+     *                      sequence of choice elements in vector <i>columnTypes</i>.
+     * @param layoutMode    Either <i>COMPACT</i>, <i>LAST_COLUMN_FILL_WIDTH</i> or
      * <i>VECOR</i>. Define layout constraints for table. Possible values
      * defined in {@code AveTablePanel.LayoutMode}.
      */
@@ -93,16 +100,16 @@ public abstract class AveTablePanel extends JPanel {
      * Creates a new instance of {@code AveTablePanel}. The table is initially
      * empty but maybe initialized using setContents.
      *
-     * @param columnHeaders The columnHeaders of the table, the number of
-     * entries defines the column dimension.
-     * @param columnTypes A vector that specifies the sequence and the types for
-     * table columns.
-     * @param choiceModels A vector that has a reference to the model for
-     * columns with a comboBox. The sequence of the vector must match the
-     * sequence of choice elements in vector <i>columnTypes</i>.
+     * @param columnHeaders  The columnHeaders of the table, the number of
+     *                       entries defines the column dimension.
+     * @param columnTypes    A vector that specifies the sequence and the types for
+     *                       table columns.
+     * @param choiceModels   A vector that has a reference to the model for
+     *                       columns with a comboBox. The sequence of the vector must match the
+     *                       sequence of choice elements in vector <i>columnTypes</i>.
      * @param columnDefaults A vector of the same dimension as the
-     * columnHeaders, where the entries are not <i>null</i> and then hold the
-     * column default value, if column entry is optional.
+     *                       columnHeaders, where the entries are not <i>null</i> and then hold the
+     *                       column default value, if column entry is optional.
      */
     public AveTablePanel(final String[] columnHeaders, final String[] columnTypes,
             final AveSharedDataModel<String>[] choiceModels, final String[] columnDefaults) {
@@ -113,17 +120,17 @@ public abstract class AveTablePanel extends JPanel {
      * Creates a new instance of {@code AveTablePanel}. The table is initially
      * empty but maybe initialized using setContents.
      *
-     * @param columnHeaders The columnHeaders of the table, the number of
-     * entries defines the column dimension.
-     * @param columnTypes A vector that specifies the sequence and the types for
-     * table columns.
-     * @param choiceModels A vector that has a reference to the model for
-     * columns with a comboBox. The sequence of the vector must match the
-     * sequence of choice elements in vector <i>columnTypes</i>.
+     * @param columnHeaders  The columnHeaders of the table, the number of
+     *                       entries defines the column dimension.
+     * @param columnTypes    A vector that specifies the sequence and the types for
+     *                       table columns.
+     * @param choiceModels   A vector that has a reference to the model for
+     *                       columns with a comboBox. The sequence of the vector must match the
+     *                       sequence of choice elements in vector <i>columnTypes</i>.
      * @param columnDefaults A vector of the same dimension as the
-     * columnHeaders, where the entries are not <i>null</i> and then hold the
-     * column default value, if column entry is optional.
-     * @param layoutMode Either <i>COMPACT</i>, <i>LAST_COLUMN_FILL_WIDTH</i> or
+     *                       columnHeaders, where the entries are not <i>null</i> and then hold the
+     *                       column default value, if column entry is optional.
+     * @param layoutMode     Either <i>COMPACT</i>, <i>LAST_COLUMN_FILL_WIDTH</i> or
      * <i>VECOR</i>. Define layout constraints for table. Possible values
      * defined in {@code AveTablePanel.LayoutMode}.
      */
@@ -136,21 +143,21 @@ public abstract class AveTablePanel extends JPanel {
      * Creates a new instance of {@code AveTablePanel}. The table is is
      * initialized with <i>initNbrOfRows</i> number of rows.
      *
-     * @param columnHeaders The columnHeaders of the table, the number of
-     * entries defines the column dimension.
-     * @param columnTypes A vector that specifies the sequence and the types for
-     * table columns.
-     * @param choiceModels A vector that has a reference to the model for
-     * columns with a comboBox. The sequence of the vector must match the
-     * sequence of choice elements in vector <i>columnTypes</i>.
+     * @param columnHeaders  The columnHeaders of the table, the number of
+     *                       entries defines the column dimension.
+     * @param columnTypes    A vector that specifies the sequence and the types for
+     *                       table columns.
+     * @param choiceModels   A vector that has a reference to the model for
+     *                       columns with a comboBox. The sequence of the vector must match the
+     *                       sequence of choice elements in vector <i>columnTypes</i>.
      * @param columnDefaults A vector of the same dimension as the
-     * columnHeaders, where the entries are not <i>null</i> and then hold the
-     * column default value, if column entry is optional.
-     * @param layoutMode Either <i>COMPACT</i>, <i>LAST_COLUMN_FILL_WIDTH</i> or
+     *                       columnHeaders, where the entries are not <i>null</i> and then hold the
+     *                       column default value, if column entry is optional.
+     * @param layoutMode     Either <i>COMPACT</i>, <i>LAST_COLUMN_FILL_WIDTH</i> or
      * <i>VECOR</i>. Define layout constraints for table. Possible values
      * defined in {@code AveTablePanel.LayoutMode}.
-     * @param initNbrOfRows Defines initial number of rows created automatically
-     * on initialization. Default value is DEFAULT_NBR_INITIALLY_CREATED_ROWS.
+     * @param initNbrOfRows  Defines initial number of rows created automatically
+     *                       on initialization. Default value is DEFAULT_NBR_INITIALLY_CREATED_ROWS.
      */
     public AveTablePanel(final String[] columnHeaders, final String[] columnTypes,
             final AveSharedDataModel<String>[] choiceModels, final String[] columnDefaults, final LayoutMode layoutMode,
@@ -163,23 +170,23 @@ public abstract class AveTablePanel extends JPanel {
      * initialized with <i>initNbrOfRows</i> but at least with
      * <i>minNbrOfRows</i> number of rows.
      *
-     * @param columnHeaders The columnHeaders of the table, the number of
-     * entries defines the column dimension.
-     * @param columnTypes A vector that specifies the sequence and the types for
-     * table columns.
-     * @param choiceModels A vector that has a reference to the model for
-     * columns with a comboBox. The sequence of the vector must match the
-     * sequence of choice elements in vector <i>columnTypes</i>.
+     * @param columnHeaders  The columnHeaders of the table, the number of
+     *                       entries defines the column dimension.
+     * @param columnTypes    A vector that specifies the sequence and the types for
+     *                       table columns.
+     * @param choiceModels   A vector that has a reference to the model for
+     *                       columns with a comboBox. The sequence of the vector must match the
+     *                       sequence of choice elements in vector <i>columnTypes</i>.
      * @param columnDefaults A vector of the same dimension as the
-     * columnHeaders, where the entries are not <i>null</i> and then hold the
-     * column default value, if column entry is optional.
-     * @param layoutMode Either <i>COMPACT</i>, <i>LAST_COLUMN_FILL_WIDTH</i> or
+     *                       columnHeaders, where the entries are not <i>null</i> and then hold the
+     *                       column default value, if column entry is optional.
+     * @param layoutMode     Either <i>COMPACT</i>, <i>LAST_COLUMN_FILL_WIDTH</i> or
      * <i>VECOR</i>. Define layout constraints for table. Possible values
      * defined in {@code AveTablePanel.LayoutMode}.
-     * @param initNbrOfRows Defines initial number of rows created automatically
-     * on initialization. Default value is DEFAULT_NBR_MINIMUM_ROWS.
-     * @param minNbrOfRows Defines the minimum numbers of (undeletable) rows
-     * automatically created.
+     * @param initNbrOfRows  Defines initial number of rows created automatically
+     *                       on initialization. Default value is DEFAULT_NBR_MINIMUM_ROWS.
+     * @param minNbrOfRows   Defines the minimum numbers of (undeletable) rows
+     *                       automatically created.
      */
     public AveTablePanel(final String[] columnHeaders, final String[] columnTypes,
             final AveSharedDataModel<String>[] choiceModels, final String[] columnDefaults, final LayoutMode layoutMode,
@@ -196,20 +203,20 @@ public abstract class AveTablePanel extends JPanel {
      * least <i>minNbrOfRows</i> rows. Rows can be added after initialization
      * using setContents.
      *
-     * @param columnHeaders The columnHeaders of the table, the number of
-     * entries defines the column dimension.
-     * @param columnTypes A vector that specifies the sequence and the types for
-     * table columns.
-     * @param choiceModels A vector that has a reference to the model for
-     * columns with a comboBox. The sequence of the vector must match the
-     * sequence of choice elements in vector <i>columnTypes</i>.
+     * @param columnHeaders  The columnHeaders of the table, the number of
+     *                       entries defines the column dimension.
+     * @param columnTypes    A vector that specifies the sequence and the types for
+     *                       table columns.
+     * @param choiceModels   A vector that has a reference to the model for
+     *                       columns with a comboBox. The sequence of the vector must match the
+     *                       sequence of choice elements in vector <i>columnTypes</i>.
      * @param columnDefaults A vector of the same dimension as the
-     * columnHeaders, where the entries are not <i>null</i> and then hold the
-     * column default value, if column entry is optional.
-     * @param initRowNbr Defines minimum height information for the layout of
-     * the table specified in numbers of rows.
-     * @param minNbrOfRows Defines the minimum numbers of (undeletable) rows
-     * automatically created.
+     *                       columnHeaders, where the entries are not <i>null</i> and then hold the
+     *                       column default value, if column entry is optional.
+     * @param initRowNbr     Defines minimum height information for the layout of
+     *                       the table specified in numbers of rows.
+     * @param minNbrOfRows   Defines the minimum numbers of (undeletable) rows
+     *                       automatically created.
      */
     public AveTablePanel(final String[] columnHeaders, final String[] columnTypes,
             final AveSharedDataModel<String>[] choiceModels, final String[] columnDefaults, int initRowNbr, int minNbrOfRows) {
@@ -232,24 +239,24 @@ public abstract class AveTablePanel extends JPanel {
      * initialized with <i>initNbrOfRows</i> but at least with
      * <i>minNbrOfRows</i> number of rows.
      *
-     * @param columnHeaders The columnHeaders of the table, the number of
-     * entries defines the column dimension.
-     * @param columnTypes A vector that specifies the sequence and the types for
-     * table columns.
-     * @param choiceModels A vector that has a reference to the model for
-     * columns with a comboBox. The sequence of the vector must match the
-     * sequence of choice elements in vector <i>columnTypes</i>.
-     * @param columnDefaults A vector of the same dimension as the
-     * columnHeaders, where the entries are not <i>null</i> and then hold the
-     * column default value, if column entry is optional.
-     * @param layoutMode Either COMPACT or LAST_COLUMN_FILL_WIDTH. Define layout
-     * constraints for table.
-     * @param initNbrOfRows Defines initial number of rows created automatically
-     * on initialization. Default value is 0.
-     * @param minNbrOfRows Defines the minimum numbers of (undeletable) rows
-     * automatically created.
+     * @param columnHeaders   The columnHeaders of the table, the number of
+     *                        entries defines the column dimension.
+     * @param columnTypes     A vector that specifies the sequence and the types for
+     *                        table columns.
+     * @param choiceModels    A vector that has a reference to the model for
+     *                        columns with a comboBox. The sequence of the vector must match the
+     *                        sequence of choice elements in vector <i>columnTypes</i>.
+     * @param columnDefaults  A vector of the same dimension as the
+     *                        columnHeaders, where the entries are not <i>null</i> and then hold the
+     *                        column default value, if column entry is optional.
+     * @param layoutMode      Either COMPACT or LAST_COLUMN_FILL_WIDTH. Define layout
+     *                        constraints for table.
+     * @param initNbrOfRows   Defines initial number of rows created automatically
+     *                        on initialization. Default value is 0.
+     * @param minNbrOfRows    Defines the minimum numbers of (undeletable) rows
+     *                        automatically created.
      * @param minHeightInRows Defines minimum height information for the layout
-     * of the table specified in numbers of rows.
+     *                        of the table specified in numbers of rows.
      */
     public AveTablePanel(final String[] columnHeaders, final String[] columnTypes,
             final AveSharedDataModel<String>[] choiceModels, final String[] columnDefaults, final LayoutMode layoutMode,
@@ -271,17 +278,19 @@ public abstract class AveTablePanel extends JPanel {
         // Calculate the number of rows to create. 
         initNbrOfRows = Math.max(this.minNbrOfRows, initNbrOfRows);
 
+        this.autoCreateNewRowAfterLastEdit = false;
+
         // Create empty table (rows are added dynamically).
         this.tableModel = new AveTableModel(columnHeaders);
         // Table initialisation and configuration
-        this.table
-                = new AveTable(this.tableModel, minHeightInRows, DEFAULT_COLUMN_HEADER_PADDING, DEFAULT_VIEWPORT_HEIGHT_MARGIN);
+        this.table =
+                new AveTable(this.tableModel, minHeightInRows, DEFAULT_COLUMN_HEADER_PADDING, DEFAULT_VIEWPORT_HEIGHT_MARGIN);
         table.setRowHeight(DEFAULT_ROW_HEIGHT);
         table.setAutoResizeMode(LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(this.layoutMode));
 
         // Automatically create initNbrOfRows but at least minNbrOfRows rows.
         for (int idx = 0; idx < initNbrOfRows; idx++) {
-            addRow();
+            this.addRow();
         }
 
         // A Panel for table, add- and remove-button.
@@ -289,10 +298,13 @@ public abstract class AveTablePanel extends JPanel {
 
         // A layout Panel for add- and remove-button.
         this.buttonsPanel = new JPanel(new BorderLayout());
+        this.addRowButton = new JButton("Add");
+        this.removeRowButton = new JButton("Delete");
+
         this.buttonsPanelResizeListener = new ButtonsPanelMouseInputAdapter(this);
 
         // A ScrollPane for the table with horizontal scrollbars.
-        this.scrollPane = new JScrollPane(table);
+        this.scrollPane = new ScrollWhenScrollBarShowingPane(table, this);
         this.viewportChangeListener = this::viewportChanged;
 
         this.initUI();
@@ -325,26 +337,27 @@ public abstract class AveTablePanel extends JPanel {
 
         // Add- and remove button initialisation and configuration.
         if (!LayoutMode.VECTOR.equals(this.layoutMode)) {
-            final JButton addRowButton = new JButton("Add");
-            addRowButton.addActionListener(a -> {
+            this.addRowButton.addActionListener(a -> {
                 SwingUtilities.invokeLater(() -> {
                     this.addRow();
                 });
             });
-            final JButton removeRowButton = new JButton("Delete");
-            removeRowButton.addActionListener(a -> {
+            this.removeRowButton.addActionListener(a -> {
                 SwingUtilities.invokeLater(() -> {
                     this.removeSelectedRows();
                 });
             });
-            this.buttonsPanel.add(addRowButton, BorderLayout.LINE_START);
-            this.buttonsPanel.add(Box.createHorizontalStrut(20), BorderLayout.CENTER); // add 20px spacing between buttons
-            this.buttonsPanel.add(removeRowButton, BorderLayout.LINE_END);
+            this.buttonsPanel.add(this.addRowButton, BorderLayout.LINE_START);
+             // Add 20px spacing between buttons.
+            this.buttonsPanel.add(Box.createHorizontalStrut(20), BorderLayout.CENTER);
+            this.buttonsPanel.add(this.removeRowButton, BorderLayout.LINE_END);
+            // A quick dirty fix to pixel align buttonspanel with table. Add 1px inset from right.
+            this.buttonsPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 1));
             this.tablePanel.add(buttonsPanel, BorderLayout.PAGE_END);
 
-            // Set the table's minimum width if buttonsPanel is wider than the current table width.
-            if (this.table.getColumnModel().getTotalColumnWidth() < this.buttonsPanel.getPreferredSize().width) {
-                this.table.setMinimumWidth(this.buttonsPanel.getPreferredSize().width);
+            // Set the table's minimum width if tablePanel with buttonsPanel is wider than the current table width.
+            if (this.table.getColumnModel().getTotalColumnWidth() < this.tablePanel.getPreferredSize().width) {
+                this.table.setMinimumWidth(this.tablePanel.getPreferredSize().width);
             }
         } else {
             this.scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
@@ -406,14 +419,17 @@ public abstract class AveTablePanel extends JPanel {
      * Adds a new row and initializes it with the zero-th value of the choice.
      */
     protected final void addRow() {
-        final AveTableRowEntry emptyRow = new AveTableRowEntry(this.columnTypes, this.choiceModels, this.columnDefaults);
-        this.tableModel.addRow(emptyRow);
+        final AveTableRowEntry newRow = new AveTableRowEntry(this.columnTypes, this.choiceModels, this.columnDefaults);
+        this.tableModel.addRow(newRow);
     }
 
     /**
      * Removes selected rows.
      */
     private void removeSelectedRows() {
+        if (this.tableModel.getRowCount() == 0 || table.getSelectedRowCount() == 0) {
+            return;
+        }
         final int[] selected = table.getSelectedRows();
         final int lastSelected = selected[selected.length - 1];
         for (int idx = selected.length - 1; idx >= 0; idx--) {
@@ -424,7 +440,8 @@ public abstract class AveTablePanel extends JPanel {
         // Select next to the last deleted row and scroll to the new selection. 
         if (this.tableModel.getRowCount() > 0) {
             int prefSelection = lastSelected + 1 - selected.length;
-            prefSelection = this.tableModel.getRowCount() > prefSelection ? prefSelection : this.tableModel.getRowCount() - 1;
+            prefSelection = this.tableModel.getRowCount() > prefSelection ? prefSelection :
+                    this.tableModel.getRowCount() - 1;
             table.setRowSelectionInterval(prefSelection, prefSelection);
             table.scrollRectToVisible(new Rectangle(table.getCellRect(prefSelection, 0, true)));
         }
@@ -449,6 +466,21 @@ public abstract class AveTablePanel extends JPanel {
      */
     public void disableEditing() {
         this.table.setEnabled(false);
+        if (!LayoutMode.VECTOR.equals(this.layoutMode)) {
+            this.addRowButton.setEnabled(false);
+            this.removeRowButton.setEnabled(false);
+        }
+    }
+
+    public void setAutoCreateNewRowAfterLastEdit(final boolean isAutoCreate) {
+        final AveTableRowEntry rowPrototype =
+                new AveTableRowEntry(this.columnTypes, this.choiceModels, this.columnDefaults);
+        this.table.setAutoCreateNewRowAfterLastEdit(isAutoCreate ? rowPrototype : null);
+        this.autoCreateNewRowAfterLastEdit = isAutoCreate;
+    }
+
+    public boolean isAutoCreateNewRowAfterLastEdit() {
+        return autoCreateNewRowAfterLastEdit;
     }
 
     /**
@@ -468,7 +500,7 @@ public abstract class AveTablePanel extends JPanel {
      *
      * @param rowHeight new row height
      * @exception IllegalArgumentException if <code>rowHeight</code> is less
-     * than 1
+     *                                     than 1
      * @see #getRowHeight
      * @beaninfo bound: true description: The height of the specified row.
      */
@@ -492,7 +524,7 @@ public abstract class AveTablePanel extends JPanel {
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            this.aveTablePanel.setCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
+            this.aveTablePanel.setCursor(Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR));
         }
 
         @Override
@@ -521,6 +553,68 @@ public abstract class AveTablePanel extends JPanel {
                     // Reset the parent's prefferedSize to have the parent layout itself.
                     aveTablePanel.getTablePanel().setPreferredSize(null);
                     aveTablePanel.resize();
+                }
+            }
+        }
+    }
+
+    private static class ScrollWhenScrollBarShowingPane extends JScrollPane {
+
+        private final JPanel rootPanel;
+
+        public ScrollWhenScrollBarShowingPane(Component view, final JPanel rootPanel) {
+            super(view);
+            this.rootPanel = rootPanel;
+        }
+
+        @Override
+        protected void processMouseWheelEvent(MouseWheelEvent evt) {
+            final Component parent = SwingUtilities.getAncestorOfClass(Component.class, this.rootPanel);
+            final JScrollBar vScrollBar = this.getVerticalScrollBar();
+
+            if (parent != null && vScrollBar != null && !vScrollBar.isShowing()) {
+                parent.dispatchEvent(evt);
+            } else {
+                super.processMouseWheelEvent(evt);
+            }
+        }
+    }
+
+    private static class ScrollOnlyWhenFocusedPane extends JScrollPane {
+
+        private final JPanel rootPanel;
+
+        public ScrollOnlyWhenFocusedPane(Component view, final JPanel rootPanel) {
+            super(view);
+            this.rootPanel = rootPanel;
+        }
+
+        @Override
+        protected void processMouseWheelEvent(MouseWheelEvent evt) {
+            final Component outerWidget = SwingUtilities.getAncestorOfClass(Component.class, this.rootPanel);
+
+            // Case 1: we don't have focus, so we don't scroll
+            Component innerWidget = getViewport().getView();
+            if (!innerWidget.hasFocus()) {
+                outerWidget.dispatchEvent(evt);
+            } else {
+                // Case 2: we have focus
+                JScrollBar innerBar = getVerticalScrollBar();
+                // Deal with horizontally scrolling widgets
+                if (!innerBar.isShowing()) {
+                    innerBar = getHorizontalScrollBar();
+                }
+
+                boolean wheelUp = evt.getWheelRotation() < 0;
+                boolean atTop = (innerBar.getValue() == 0);
+                boolean atBottom = (innerBar.getValue() == (innerBar.getMaximum() - innerBar.getVisibleAmount()));
+
+                // Case 2.1: we've already scrolled as much as we could
+                if ((wheelUp & atTop) || (!wheelUp & atBottom)) {
+                    outerWidget.dispatchEvent(evt);
+                } else {
+                    // Case 2.2: we'll scroll    
+                    super.processMouseWheelEvent(evt);
                 }
             }
         }
