@@ -51,16 +51,16 @@ public class AveTableModel extends AbstractTableModel {
      * @param tableEntry The non-null {@code AveTableRowEntry} object to be added.
      */
     @SuppressWarnings("unchecked")
-    public void addRow(AveTableRowEntry tableEntry) {
-        if (columnNames.length != tableEntry.rowData.length) {
-            throw new IllegalArgumentException("The number of colums (" + tableEntry.rowData.length + ") in given 'TableRowEntry' "
-                    + "does not match with the number of columns (" + columnNames.length + ") in this 'TableModel'.");
+    public void addRow(final AveTableRowEntry tableEntry) {
+        if (columnNames.length != tableEntry.getRowData().length) {
+            throw new IllegalArgumentException("The number of colums (" + tableEntry.getRowData().length + ") in given 'TableRowEntry' " +
+                     "does not match with the number of columns (" + columnNames.length + ") in this 'TableModel'.");
         }
         int currentIndex = entries.size();
         this.entries.add(tableEntry);
         fireTableRowsInserted(currentIndex, currentIndex);
     }
-    
+
     /**
      * Removes the row at <code>row</code> from the model. Notification
      * of the row being removed will be sent to all the listeners.
@@ -107,7 +107,7 @@ public class AveTableModel extends AbstractTableModel {
         AveTableRowEntry rowData = this.entries.elementAt(rowIndex);
         return rowData.getRowDataForColumn(columnIndex);
     }
-    
+
     public String getStringValueAt(int rowIndex, int columnIndex) {
         final Object valueAt = this.getValueAt(rowIndex, columnIndex);
         String stringValueAt = null;
@@ -132,7 +132,7 @@ public class AveTableModel extends AbstractTableModel {
      * @exception ArrayIndexOutOfBoundsException if an invalid row or column was given
      */
     @Override
-    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+    public void setValueAt(final Object aValue, int rowIndex, int columnIndex) {
         AveTableRowEntry rowData = this.entries.elementAt(rowIndex);
         rowData.setRowDataForColumn(aValue, columnIndex);
         fireTableCellUpdated(rowIndex, columnIndex);
