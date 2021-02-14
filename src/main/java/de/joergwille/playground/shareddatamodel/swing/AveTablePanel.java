@@ -296,7 +296,6 @@ public abstract class AveTablePanel extends JPanel {
 
         // A Panel for table, add- and remove-button.
         this.tablePanel = new JPanel(new BorderLayout());
-        this.tablePanel.setBorder(BorderFactory.createLineBorder(Color.RED, 1));
 
         // A layout Panel for add- and remove-button.
         this.buttonsPanel = new JPanel(new BorderLayout());
@@ -380,8 +379,10 @@ public abstract class AveTablePanel extends JPanel {
             final Dimension scrollPaneSize = this.scrollPane.getPreferredSize();
 
             if (this.scrollPane.getVerticalScrollBarPolicy() != JScrollPane.VERTICAL_SCROLLBAR_NEVER) {
-                // We add extra width to scrollPaneViewPortSize if vertical ScrollBar is showing.
-                scrollPaneViewPortSize.width += this.scrollPane.getVerticalScrollBar().isShowing() ? this.scrollPane.getVerticalScrollBar().getWidth() : 0;
+//                // Add an extra width to scrollPaneViewPortSize if vertical ScrollBar is showing.
+//                scrollPaneViewPortSize.width += this.scrollPane.getVerticalScrollBar().isShowing() ? this.scrollPane.getVerticalScrollBar().getWidth() : 0;
+                // Add a constant extra width to gain space for vertical ScrollBar. 
+                this.table.setLastColumnExtraWidth(this.scrollPane.getVerticalScrollBar().getWidth());
             }
 
             if (scrollPaneSize.width != scrollPaneViewPortSize.width) {

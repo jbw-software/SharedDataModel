@@ -31,7 +31,6 @@ public class AveTable extends JTable {
     private int visibleRowCount;
     private int viewportHeightMargin;
     private AveTableRowEntry rowPrototype;
-    private int extraWidthForScrollBar;
 
     public AveTable(final TableModel tableModel) {
         this(tableModel, Math.max(DEFAULT_VISIBLE_ROW_COUNT, tableModel.getRowCount()));
@@ -51,9 +50,9 @@ public class AveTable extends JTable {
         this.viewportHeightMargin = viewportHeightMargin;
         this.minWidthHeaderRenderer = new MinWidthHeaderRenderer(this, columnHeaderPadding);
 
-        // Initially empty, can be set in setAutoCreateNewRowAfterLastEdit().
+        // Initially empty. It get initalized in setAutoCreateNewRowAfterLastEdit(). Table needs to know row data, when rows are created.
         this.rowPrototype = null;
-
+        
         // JTable uses some default values for PreferredScrollableViewportSize. Do not use these.
         super.setPreferredScrollableViewportSize(null);
 
@@ -200,6 +199,10 @@ public class AveTable extends JTable {
     public void setMinimumWidth(int minimumWidth) {
         this.minWidthHeaderRenderer.setTotalMinimumWidth(minimumWidth);
     }
+    
+    public void setLastColumnExtraWidth(int lastColumnExtraWidth) {
+        this.minWidthHeaderRenderer.setLastColumnExtraWidth(lastColumnExtraWidth);
+    }
 
     private static class MinWidthHeaderRenderer implements TableCellRenderer {
 
@@ -207,6 +210,7 @@ public class AveTable extends JTable {
         private final DefaultTableCellRenderer renderer;
         private final int columnPadding;
         private int totalMinimumWidth;
+        private int lastColumnExtraWidth;
 
         public MinWidthHeaderRenderer(final JTable table, int columnPadding) {
             this.table = table;
@@ -229,6 +233,11 @@ public class AveTable extends JTable {
 
             // Set minimum width from component preferred size.
             int minColumnWidth = component.getPreferredSize().width + (2 * this.columnPadding);
+            
+            // Optionally add extra width for last column, e.g. to gain space for vertical ScrollBar.
+            if (this.lastColumnExtraWidth > 0 && column == (columnModel.getColumnCount() - 1)) {
+                minColumnWidth += this.lastColumnExtraWidth;
+            }
 
             // Make sure that the width of all columns is at least as wide as the totalMinimumWidth,
             // which might have been set externally (e.g. because add- and remove buttons need more space).
@@ -248,8 +257,8 @@ public class AveTable extends JTable {
             this.totalMinimumWidth = totalMinimumWidth;
         }
 
-        public int getTotalMinimumWidth() {
-            return this.totalMinimumWidth;
+        public void setLastColumnExtraWidth(int lastColumnExtraWidth) {
+            this.lastColumnExtraWidth = lastColumnExtraWidth;
         }
     }
 }
