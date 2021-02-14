@@ -111,13 +111,6 @@ public class AveTable extends JTable {
             final TableColumn last = tcm.getColumn(tcm.getColumnCount() - 1);
             last.setPreferredWidth(last.getPreferredWidth() + delta);
             last.setWidth(last.getPreferredWidth());
-        } else if (this.extraWidthForScrollBar != 0 && tableHeader.getResizingColumn() == null) {
-            final TableColumnModel tcm = getColumnModel();
-            final TableColumn last = tcm.getColumn(tcm.getColumnCount() - 1);
-            System.out.println("last column w = " + (last.getPreferredWidth() + this.extraWidthForScrollBar));
-            last.setPreferredWidth(last.getPreferredWidth() + this.extraWidthForScrollBar);
-            last.setWidth(last.getPreferredWidth());            
-            this.extraWidthForScrollBar = 0;
         } else {
             super.doLayout();
         }
@@ -126,11 +119,11 @@ public class AveTable extends JTable {
     /**
      * Add a new row automatically after editing the last one.
      * http://stackoverflow.com/questions/16368343/jtable-resize-only-selected-column-when-container-size-changes
-     * Invoked when editing is finished. The changes are saved and the
-     * editor is discarded.
+     * Invoked when editing is finished. The changes are saved and the editor is
+     * discarded.
      * <p>
-     * Application code will not use these methods explicitly, they
-     * are used internally by JTable.
+     * Application code will not use these methods explicitly, they are used
+     * internally by JTable.
      *
      * @param e the event received
      * @see CellEditorListener
@@ -207,10 +200,6 @@ public class AveTable extends JTable {
     public void setMinimumWidth(int minimumWidth) {
         this.minWidthHeaderRenderer.setTotalMinimumWidth(minimumWidth);
     }
-    
-    public void setExtraWidthForScrollBar(int extraWidthForScrollBar) {
-        this.extraWidthForScrollBar = extraWidthForScrollBar;
-    }
 
     private static class MinWidthHeaderRenderer implements TableCellRenderer {
 
@@ -233,8 +222,8 @@ public class AveTable extends JTable {
         public Component getTableCellRendererComponent(
                 JTable table, Object value, boolean isSelected,
                 boolean hasFocus, int row, int column) {
-            final Component component =
-                    renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            final Component component
+                    = renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             final TableColumnModel columnModel = table.getColumnModel();
             final TableColumn tableColumn = columnModel.getColumn(column);
 
@@ -243,8 +232,8 @@ public class AveTable extends JTable {
 
             // Make sure that the width of all columns is at least as wide as the totalMinimumWidth,
             // which might have been set externally (e.g. because add- and remove buttons need more space).
-            if (columnModel.getTotalColumnWidth() < this.totalMinimumWidth &&
-                    column == (columnModel.getColumnCount() - 1)) {
+            if (columnModel.getTotalColumnWidth() < this.totalMinimumWidth
+                    && column == (columnModel.getColumnCount() - 1)) {
                 minColumnWidth = tableColumn.getWidth() + this.totalMinimumWidth - columnModel.getTotalColumnWidth();
             }
 
@@ -256,14 +245,9 @@ public class AveTable extends JTable {
         }
 
         public void setTotalMinimumWidth(int totalMinimumWidth) {
-//            if (totalMinimumWidth < this.totalMinimumWidth) {
-//                final TableColumnModel columnModel = table.getColumnModel();
-//                final TableColumn tableColumn = columnModel.getColumn(columnModel.getColumnCount() - 1);
-//                tableColumn.setMinWidth(0);
-//            }
             this.totalMinimumWidth = totalMinimumWidth;
         }
-        
+
         public int getTotalMinimumWidth() {
             return this.totalMinimumWidth;
         }

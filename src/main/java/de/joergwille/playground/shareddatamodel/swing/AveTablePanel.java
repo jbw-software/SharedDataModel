@@ -25,7 +25,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
-import javax.swing.table.TableColumnModel;
 
 /**
  * Extends a JPanel and creates the view and layout as a base class for
@@ -60,8 +59,7 @@ public abstract class AveTablePanel extends JPanel {
     private final ChangeListener viewportChangeListener;
 
     private boolean autoCreateNewRowAfterLastEdit;
-    private boolean verticalScrollBarIsShowing;
-        private int COUNTER = 0;
+
     /**
      * Creates a new instance of {@code AveTablePanel}. The table is initially
      * empty but maybe initialized using setContents.
@@ -371,26 +369,20 @@ public abstract class AveTablePanel extends JPanel {
 
         // Save ScrollPane minimum height.
         this.updateScrollPaneMinimumHeight();
-        this.verticalScrollBarIsShowing = this.scrollPane.getVerticalScrollBar().isShowing();
     }
 
     // Table columns width change dynamically and therefore the ViewPort changes.
     // If layoutMode is not LAST_COLUMN_FILL_WIDTH we reflect these changes to update ScrollPane size
     // and have TablePanel to layout itself.
     private void viewportChanged(ChangeEvent event) {
-        final Dimension scrollPaneViewPortSize = this.scrollPane.getViewport().getViewSize();
-        final Dimension scrollPaneSize = this.scrollPane.getPreferredSize();
         if (!LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(this.layoutMode)) {
-            if (this.scrollPane.getVerticalScrollBarPolicy() != JScrollPane.VERTICAL_SCROLLBAR_NEVER  &&
-                    this.verticalScrollBarIsShowing != this.scrollPane.getVerticalScrollBar().isShowing()) {
-                this.verticalScrollBarIsShowing = this.scrollPane.getVerticalScrollBar().isShowing();
-                int scrollBarDelta = this.verticalScrollBarIsShowing ? this.scrollPane.getVerticalScrollBar().getWidth() : this.scrollPane.getVerticalScrollBar().getWidth() * (-1);
-                this.table.setExtraWidthForScrollBar(scrollBarDelta);
-                this.table.doLayout();
-System.out.println("this.verticalScrollBarIsShowing = " + this.verticalScrollBarIsShowing);
+            final Dimension scrollPaneViewPortSize = this.scrollPane.getViewport().getViewSize();
+            final Dimension scrollPaneSize = this.scrollPane.getPreferredSize();
+
+            if (this.scrollPane.getVerticalScrollBarPolicy() != JScrollPane.VERTICAL_SCROLLBAR_NEVER) {
+                // We add extra width to scrollPaneViewPortSize if vertical ScrollBar is showing.
+                scrollPaneViewPortSize.width += this.scrollPane.getVerticalScrollBar().isShowing() ? this.scrollPane.getVerticalScrollBar().getWidth() : 0;
             }
-            // We add extra width to scrollPaneViewPortSize if vertical ScrollBar is showing.
-//            scrollPaneViewPortSize.width += this.scrollPane.getVerticalScrollBar().isShowing() ? this.scrollPane.getVerticalScrollBar().getWidth() : 0;
 
             if (scrollPaneSize.width != scrollPaneViewPortSize.width) {
                 scrollPaneSize.width = scrollPaneViewPortSize.width;
