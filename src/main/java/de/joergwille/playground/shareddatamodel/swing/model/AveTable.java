@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import javax.swing.JLabel;
 import javax.swing.JTable;
-import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
@@ -32,6 +31,7 @@ public class AveTable extends JTable {
     private int visibleRowCount;
     private int viewportHeightMargin;
     private AveTableRowEntry rowPrototype;
+    private int extraWidthForScrollBar;
 
     public AveTable(final TableModel tableModel) {
         this(tableModel, Math.max(DEFAULT_VISIBLE_ROW_COUNT, tableModel.getRowCount()));
@@ -111,6 +111,13 @@ public class AveTable extends JTable {
             final TableColumn last = tcm.getColumn(tcm.getColumnCount() - 1);
             last.setPreferredWidth(last.getPreferredWidth() + delta);
             last.setWidth(last.getPreferredWidth());
+        } else if (this.extraWidthForScrollBar != 0 && tableHeader.getResizingColumn() == null) {
+            final TableColumnModel tcm = getColumnModel();
+            final TableColumn last = tcm.getColumn(tcm.getColumnCount() - 1);
+            System.out.println("last column w = " + (last.getPreferredWidth() + this.extraWidthForScrollBar));
+            last.setPreferredWidth(last.getPreferredWidth() + this.extraWidthForScrollBar);
+            last.setWidth(last.getPreferredWidth());            
+            this.extraWidthForScrollBar = 0;
         } else {
             super.doLayout();
         }
@@ -197,8 +204,12 @@ public class AveTable extends JTable {
         this.rowPrototype = rowPrototype;
     }
 
-    public void setMinimumWidth(int mnimumWidth) {
-        this.minWidthHeaderRenderer.setTotalMinimumWidth(mnimumWidth);
+    public void setMinimumWidth(int minimumWidth) {
+        this.minWidthHeaderRenderer.setTotalMinimumWidth(minimumWidth);
+    }
+    
+    public void setExtraWidthForScrollBar(int extraWidthForScrollBar) {
+        this.extraWidthForScrollBar = extraWidthForScrollBar;
     }
 
     private static class MinWidthHeaderRenderer implements TableCellRenderer {
@@ -245,7 +256,16 @@ public class AveTable extends JTable {
         }
 
         public void setTotalMinimumWidth(int totalMinimumWidth) {
+//            if (totalMinimumWidth < this.totalMinimumWidth) {
+//                final TableColumnModel columnModel = table.getColumnModel();
+//                final TableColumn tableColumn = columnModel.getColumn(columnModel.getColumnCount() - 1);
+//                tableColumn.setMinWidth(0);
+//            }
             this.totalMinimumWidth = totalMinimumWidth;
+        }
+        
+        public int getTotalMinimumWidth() {
+            return this.totalMinimumWidth;
         }
     }
 }

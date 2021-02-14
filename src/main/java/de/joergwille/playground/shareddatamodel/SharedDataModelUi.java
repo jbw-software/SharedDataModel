@@ -196,7 +196,7 @@ public class SharedDataModelUi extends JFrame {
             switch (i) {
                 case 0:
                     // LayoutMode.COMPACT
-                    panel = new AveGenericTablePanel(columnNames, columnTypes, choiceModels, null);
+                    panel = new AveGenericTablePanel(columnNames, columnTypes, choiceModels, null, false);
                     break;
                 case 1:
                     // LayoutMode.LAST_COLUMN_FILL_WIDTH
