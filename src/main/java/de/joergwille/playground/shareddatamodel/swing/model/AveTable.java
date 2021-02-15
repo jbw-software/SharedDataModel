@@ -31,6 +31,7 @@ public class AveTable extends JTable {
     private int visibleRowCount;
     private int viewportHeightMargin;
     private AveTableRowEntry rowPrototype;
+    private int lastColumnExtraWidth;
 
     public AveTable(final TableModel tableModel) {
         this(tableModel, Math.max(DEFAULT_VISIBLE_ROW_COUNT, tableModel.getRowCount()));
@@ -52,7 +53,10 @@ public class AveTable extends JTable {
 
         // Initially empty. It get initalized in setAutoCreateNewRowAfterLastEdit(). Table needs to know row data, when rows are created.
         this.rowPrototype = null;
-        
+
+        // Initially empty. Value gets set in setLastColumnExtraWidth() to add extra width for last column, e.g. to gain space for vertical ScrollBar.
+        this.lastColumnExtraWidth = 0;
+
         // JTable uses some default values for PreferredScrollableViewportSize. Do not use these.
         super.setPreferredScrollableViewportSize(null);
 
@@ -96,11 +100,21 @@ public class AveTable extends JTable {
         return currentPrefSize;
     }
 
+    /**
+     * Returns the {@code TableModel} that provides the data displayed by this
+     * {@code JTable}.
+     *
+     * @return the {@code AveTableModel} that provides the data displayed by
+     * this {@code AveTable}
+     */
     @Override
     public AveTableModel getModel() {
         return (AveTableModel) super.getModel();
     }
 
+    /**
+     * Causes this table to lay out its rows and columns.
+     */
     @Override
     public void doLayout() {
         //  Viewport size changed. Change last column width.
@@ -110,6 +124,12 @@ public class AveTable extends JTable {
             final TableColumn last = tcm.getColumn(tcm.getColumnCount() - 1);
             last.setPreferredWidth(last.getPreferredWidth() + delta);
             last.setWidth(last.getPreferredWidth());
+        } else if (this.lastColumnExtraWidth != 0 && tableHeader.getResizingColumn() == null) {
+            final TableColumnModel tcm = getColumnModel();
+            final TableColumn last = tcm.getColumn(tcm.getColumnCount() - 1);
+            last.setPreferredWidth(last.getPreferredWidth() + this.lastColumnExtraWidth);
+            last.setWidth(last.getPreferredWidth());
+            this.lastColumnExtraWidth = 0;
         } else {
             super.doLayout();
         }
@@ -171,18 +191,40 @@ public class AveTable extends JTable {
         return visibleRowCount;
     }
 
+    /**
+     * Returns the number of pixels to be added below table's last row.
+     *
+     * @return number of pixels.
+     */
     public int getViewportHeightMargin() {
         return viewportHeightMargin;
     }
 
+    /**
+     * Specifies an addition number of pixels to be added below table's last
+     * row.
+     *
+     * @param viewportHeightMargin margin in pixel.
+     */
     public void setViewportHeightMargin(int viewportHeightMargin) {
         this.viewportHeightMargin = viewportHeightMargin;
     }
 
+    /**
+     * @return if <i>true</i> table is being layouted by it parent, to use it's
+     * full widht.
+     */
     public boolean isAutoResizeMode() {
         return autoResizeMode;
     }
 
+    /**
+     * Specifies if the table should be layout by the parent, to use it's full
+     * widht. Additional width will only be added to the last column.
+     *
+     * @param autoResizeMode if <i>true</i> table will use parents complete
+     * width.
+     */
     public void setAutoResizeMode(boolean autoResizeMode) {
         this.autoResizeMode = autoResizeMode;
         if (this.autoResizeMode) {
@@ -192,16 +234,37 @@ public class AveTable extends JTable {
         }
     }
 
+    /**
+     * Specifies if a new row is being added after the last row, when editing last row finished.
+     * The Table needs to know row data, when rows are created. It uses the
+     * given rowPrototype to duplicate new rows.
+     *
+     * @param rowPrototype a prototype for the data of a row, which get copied
+     * to create new rows.
+     */
     public void setAutoCreateNewRowAfterLastEdit(final AveTableRowEntry rowPrototype) {
         this.rowPrototype = rowPrototype;
     }
 
+    /**
+     * Specifies the minimum width of the table.
+     *
+     * @param minimumWidth the number of pixels for specifying the total minimum
+     * width of all columns.
+     */
     public void setMinimumWidth(int minimumWidth) {
         this.minWidthHeaderRenderer.setTotalMinimumWidth(minimumWidth);
     }
-    
+
+    /**
+     * Optionally add or reduce extra width for last column, e.g. to gain space
+     * for vertical ScrollBar.
+     *
+     * @param lastColumnExtraWidth the width added or substracted to last column
+     * width.
+     */
     public void setLastColumnExtraWidth(int lastColumnExtraWidth) {
-        this.minWidthHeaderRenderer.setLastColumnExtraWidth(lastColumnExtraWidth);
+        this.lastColumnExtraWidth = lastColumnExtraWidth;
     }
 
     private static class MinWidthHeaderRenderer implements TableCellRenderer {
@@ -210,7 +273,6 @@ public class AveTable extends JTable {
         private final DefaultTableCellRenderer renderer;
         private final int columnPadding;
         private int totalMinimumWidth;
-        private int lastColumnExtraWidth;
 
         public MinWidthHeaderRenderer(final JTable table, int columnPadding) {
             this.table = table;
@@ -233,11 +295,6 @@ public class AveTable extends JTable {
 
             // Set minimum width from component preferred size.
             int minColumnWidth = component.getPreferredSize().width + (2 * this.columnPadding);
-            
-            // Optionally add extra width for last column, e.g. to gain space for vertical ScrollBar.
-            if (this.lastColumnExtraWidth > 0 && column == (columnModel.getColumnCount() - 1)) {
-                minColumnWidth += this.lastColumnExtraWidth;
-            }
 
             // Make sure that the width of all columns is at least as wide as the totalMinimumWidth,
             // which might have been set externally (e.g. because add- and remove buttons need more space).
@@ -255,10 +312,6 @@ public class AveTable extends JTable {
 
         public void setTotalMinimumWidth(int totalMinimumWidth) {
             this.totalMinimumWidth = totalMinimumWidth;
-        }
-
-        public void setLastColumnExtraWidth(int lastColumnExtraWidth) {
-            this.lastColumnExtraWidth = lastColumnExtraWidth;
         }
     }
 }

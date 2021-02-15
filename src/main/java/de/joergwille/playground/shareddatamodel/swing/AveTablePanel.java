@@ -5,7 +5,6 @@ import de.joergwille.playground.shareddatamodel.swing.model.AveTable;
 import de.joergwille.playground.shareddatamodel.swing.model.AveTableModel;
 import de.joergwille.playground.shareddatamodel.swing.model.AveTableRowEntry;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -58,6 +57,7 @@ public abstract class AveTablePanel extends JPanel {
     private final MouseInputListener buttonsPanelResizeListener;
     private final ChangeListener viewportChangeListener;
 
+    public boolean verticalScrollBarIsShowing;
     private boolean autoCreateNewRowAfterLastEdit;
 
     /**
@@ -307,6 +307,7 @@ public abstract class AveTablePanel extends JPanel {
         // A ScrollPane for the table with horizontal scrollbars.
         this.scrollPane = new ScrollWhenScrollBarShowingPane(table, this);
         this.viewportChangeListener = this::viewportChanged;
+        this.verticalScrollBarIsShowing = this.scrollPane.getVerticalScrollBar().isShowing();
 
         this.initUI();
         this.addListener();
@@ -378,21 +379,26 @@ public abstract class AveTablePanel extends JPanel {
             final Dimension scrollPaneViewPortSize = this.scrollPane.getViewport().getViewSize();
             final Dimension scrollPaneSize = this.scrollPane.getPreferredSize();
 
-            if (this.scrollPane.getVerticalScrollBarPolicy() != JScrollPane.VERTICAL_SCROLLBAR_NEVER) {
-//                // Add an extra width to scrollPaneViewPortSize if vertical ScrollBar is showing.
-//                scrollPaneViewPortSize.width += this.scrollPane.getVerticalScrollBar().isShowing() ? this.scrollPane.getVerticalScrollBar().getWidth() : 0;
-                // Add a constant extra width to gain space for vertical ScrollBar. 
-                this.table.setLastColumnExtraWidth(this.scrollPane.getVerticalScrollBar().getWidth());
-            }
+            if (!LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(this.layoutMode)) {
 
-            if (scrollPaneSize.width != scrollPaneViewPortSize.width) {
-                scrollPaneSize.width = scrollPaneViewPortSize.width;
-                this.scrollPane.setPreferredSize(scrollPaneSize);
-                this.resize();
+                // The state wether vertical ScrollBar is showing changed. If showing add some width to tables last column for ScrollBar or substract otherwise.
+                if (this.scrollPane.getVerticalScrollBarPolicy() != JScrollPane.VERTICAL_SCROLLBAR_NEVER
+                        && this.verticalScrollBarIsShowing != this.scrollPane.getVerticalScrollBar().isShowing()) {
+                    this.verticalScrollBarIsShowing = this.scrollPane.getVerticalScrollBar().isShowing();
+                    int scrollBarDelta = this.verticalScrollBarIsShowing ? this.scrollPane.getVerticalScrollBar().getWidth() : this.scrollPane.getVerticalScrollBar().getWidth() * (-1);
+                    this.table.setLastColumnExtraWidth(scrollBarDelta);
+                    this.table.doLayout();
+                }
+
+                if (scrollPaneSize.width != scrollPaneViewPortSize.width) {
+                    scrollPaneSize.width = scrollPaneViewPortSize.width;
+                    this.scrollPane.setPreferredSize(scrollPaneSize);
+                    this.resize();
+                }
             }
         }
     }
-
+    
     private void resize() {
         if (super.getParent() != null) {
             final Dimension tablePanelSize = this.tablePanel.getPreferredSize();
@@ -453,6 +459,13 @@ public abstract class AveTablePanel extends JPanel {
         }
     }
 
+    /**
+     * Notifies this component that it no longer has a parent component.
+     * This method is called by the toolkit internally and should
+     * not be called directly by programs.
+     *
+     * @see #registerKeyboardAction
+     */
     @Override
     public void removeNotify() {
         this.removeListener();
@@ -478,6 +491,11 @@ public abstract class AveTablePanel extends JPanel {
         }
     }
 
+    /**
+     * Specifies if a new row is being added after the last row, when editing
+     * last row finished.
+     * @param isAutoCreate if <i>true</i> a new row will be added after editing last row finished.
+     */
     public void setAutoCreateNewRowAfterLastEdit(final boolean isAutoCreate) {
         final AveTableRowEntry rowPrototype
                 = new AveTableRowEntry(this.columnTypes, this.choiceModels, this.columnDefaults);
@@ -485,6 +503,10 @@ public abstract class AveTablePanel extends JPanel {
         this.autoCreateNewRowAfterLastEdit = isAutoCreate;
     }
 
+    /**
+     * Returns if a new row is being added after the last row, when editing last row finished.
+     * @return <i>true</i> if a row will be added after editing last row finished.
+     */
     public boolean isAutoCreateNewRowAfterLastEdit() {
         return autoCreateNewRowAfterLastEdit;
     }
@@ -626,12 +648,17 @@ public abstract class AveTablePanel extends JPanel {
         }
     }
 
+    /**
+     * The LayoutMode enumeration specifies possible values for the layout of <code>AveTablePanel</code>.
+     * Following options are defined:
+     * COMPACT: layout table as compact as possible with respect to table rendering constraints and with row add- and delete buttons.
+     * LAST_COLUMN_FILL_WIDTH: layout table where the last column automatically resizes to parent width and with row add- and delete buttons.
+     * VECTOR: layout table as compact as possible with respect to table rendering constraints but without add- and delete buttons,
+     *         without vertical scrollbar and with only 1 row.
+     */
     public static enum LayoutMode {
-        // Layout table as compact as possible with respect to table rendering constraints.
         COMPACT,
-        // Layout table where the last column automatically resizes to parent width.
         LAST_COLUMN_FILL_WIDTH,
-        // Same as COMPACT Layout but without add- and delete buttons, without vertical scrollbar and with minNbrOfRows set to 1.
         VECTOR
     }
 }
