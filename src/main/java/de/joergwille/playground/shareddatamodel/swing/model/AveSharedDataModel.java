@@ -17,10 +17,10 @@ import javax.swing.JLabel;
  * @author willejoerg
  * @param <E>
  */
+@SuppressWarnings("serial")
 public class AveSharedDataModel<E> extends AbstractUniqueIterableDataModel<E>
         implements Serializable, UpdateObservable<E> {
 
-    private static final long serialVersionUID = 1L;
     private List<UpdateListener<E>> updateListeners;
     private boolean autoSetPrototypeDisplayValue;
     private E prototypeDisplayValue;

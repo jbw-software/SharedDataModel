@@ -11,9 +11,8 @@ import javax.swing.JComboBox;
  *
  * @author joerg
  */
+@SuppressWarnings("serial")
 public class AveChoiceElement extends JComboBox<String> {
-
-    private static final long serialVersionUID = 1L;
 
     public AveChoiceElement() {
         this(null);

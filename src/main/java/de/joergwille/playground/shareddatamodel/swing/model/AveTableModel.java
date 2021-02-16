@@ -9,6 +9,7 @@ import javax.swing.table.AbstractTableModel;
  *
  * @author willejoerg
  */
+@SuppressWarnings("serial")
 public class AveTableModel extends AbstractTableModel {
 
     private final Vector<AveTableRowEntry> entries;

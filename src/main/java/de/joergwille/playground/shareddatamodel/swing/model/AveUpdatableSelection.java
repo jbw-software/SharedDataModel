@@ -15,9 +15,9 @@ import java.util.List;
  * @author willejoerg
  * @param <E>
  */
+@SuppressWarnings("serial")
 public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable {
 
-    private static final long serialVersionUID = 1L;
     protected final AveSharedDataModel<E> sharedModel;
     private Object selectedItem;
     private boolean allowEmptySelection;

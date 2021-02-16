@@ -27,6 +27,7 @@ public class AveTable extends JTable {
      */
     public static final int DEFAULT_VISIBLE_ROW_COUNT = 1;
     private final MinWidthHeaderRenderer minWidthHeaderRenderer;
+
     private boolean autoResizeMode; // hides field in JTable
     private int visibleRowCount;
     private int viewportHeightMargin;
@@ -61,7 +62,7 @@ public class AveTable extends JTable {
         super.setPreferredScrollableViewportSize(null);
 
         // Table will not fill ScrollPane's ViewPort width. See table.getScrollableTracksViewportWidth().
-        super.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        this.setAutoResizeMode(false);
 
         // Table will fill ScrollPane's ViewPort height.
         super.setFillsViewportHeight(false);
@@ -72,9 +73,11 @@ public class AveTable extends JTable {
         // Table colums can not be reordered.
         super.getTableHeader().setReorderingAllowed(false);
 
-        // Configure renderer and editor for ComboBoxes.
+        // Configure custom renderer and editor for ComboBoxes...
         super.setDefaultRenderer(AveUpdatableSelection.class, AveChoiceElementCellRenderer.getInstance());
         super.setDefaultEditor(AveUpdatableSelection.class, AveChoiceElementCellEditor.getInstance());
+        // ...and for String values.
+        super.setDefaultRenderer(String.class, OptimizedWidthStringCellRenderer.getInstance());
 
         // Configure renderer for ColumnHeaders.
         super.getTableHeader().setDefaultRenderer(this.minWidthHeaderRenderer);
@@ -118,13 +121,13 @@ public class AveTable extends JTable {
     @Override
     public void doLayout() {
         //  Viewport size changed. Change last column width.
-        if (this.autoResizeMode && tableHeader.getResizingColumn() == null) {
-            final TableColumnModel tcm = getColumnModel();
+        if (this.autoResizeMode && super.tableHeader.getResizingColumn() == null) {
+            final TableColumnModel tcm = super.getColumnModel();
             final int delta = getParent().getWidth() - tcm.getTotalColumnWidth();
             final TableColumn last = tcm.getColumn(tcm.getColumnCount() - 1);
             last.setPreferredWidth(last.getPreferredWidth() + delta);
             last.setWidth(last.getPreferredWidth());
-        } else if (this.lastColumnExtraWidth != 0 && tableHeader.getResizingColumn() == null) {
+        } else if (this.lastColumnExtraWidth != 0 && super.tableHeader.getResizingColumn() == null) {
             final TableColumnModel tcm = getColumnModel();
             final TableColumn last = tcm.getColumn(tcm.getColumnCount() - 1);
             last.setPreferredWidth(last.getPreferredWidth() + this.lastColumnExtraWidth);
@@ -159,6 +162,22 @@ public class AveTable extends JTable {
             if (row == getRowCount() - 1 && column == getColumnCount() - 1) {
                 this.getModel().addRow(newRow);
             }
+        }
+    }
+
+    /**
+     * Deselects all selected columns and rows.
+     */
+    @Override
+    public void clearSelection() {
+        super.clearSelection();
+
+        // Reset all column identifiers.
+        // Column identifiers have been used for in custom renderer to flag
+        // if a column has manually been resized.
+        for (int i = 0; i < super.getColumnModel().getColumnCount(); i++) {
+            final TableColumn column = super.getColumnModel().getColumn(i);
+            column.setIdentifier(column.getHeaderValue());
         }
     }
 
@@ -235,9 +254,9 @@ public class AveTable extends JTable {
     }
 
     /**
-     * Specifies if a new row is being added after the last row, when editing last row finished.
-     * The Table needs to know row data, when rows are created. It uses the
-     * given rowPrototype to duplicate new rows.
+     * Specifies if a new row is being added after the last row, when editing
+     * last row finished. The Table needs to know row data, when rows are
+     * created. It uses the given rowPrototype to duplicate new rows.
      *
      * @param rowPrototype a prototype for the data of a row, which get copied
      * to create new rows.

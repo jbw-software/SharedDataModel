@@ -4,7 +4,6 @@ import de.joergwille.playground.shareddatamodel.swing.AveTablePanel;
 import de.joergwille.playground.shareddatamodel.swing.model.AveChoiceElement;
 import de.joergwille.playground.shareddatamodel.swing.model.AveSharedComboBoxModel;
 import de.joergwille.playground.shareddatamodel.swing.model.AveSharedDataModel;
-import de.joergwille.playground.shareddatamodel.swing.model.AveTableRowEntry;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.FlowLayout;
@@ -27,9 +26,9 @@ import javax.swing.JTabbedPane;
  *
  * @author joerg.wille@gmail.com
  */
+@SuppressWarnings("serial")
 public class SharedDataModelUi extends JFrame {
 
-    private static final long serialVersionUID = 1L;
     private static final String[] items = {"None1", "Spring", "Summer", "Fall", "Winter"};
     private static final String[] updatedItems = {"None2", "Frühling", "Sommer", "Winter", "Herbst", "EinGanzLangerStringMitSehrVielenBuchstaben"};
 
@@ -147,14 +146,14 @@ public class SharedDataModelUi extends JFrame {
     private void createTable(final JTabbedPane tabPane) {
         String[] columnNames = {"Number", "Choice", "Text", "SharedChoice", "Checkbox"};
         final String[][] stringData = {
-            {"0", "null"}, {"1", "eins"}, {"2", "zwei"}, {"3", "drei"}, {"4", "vier"}
+            {"0", "null"}, {"1", "eins"}, {"2", "zweihunderdtausendzweihundertzweiundzwanzig"}, {"3", "drei"}, {"4", "vier"}
         };
 
         // create a SharedDataModel with AutoSetPrototypeDisplayValue enabled.
         final AveSharedDataModel<String> choiceData = new AveSharedDataModel<>(new String[]{"None3", "A", "B", "C", "D"}, true);
 
-        int numberOfRows = stringData.length;
-        final AveTableRowEntry[] tableData = new AveTableRowEntry[numberOfRows];
+//        int numberOfRows = stringData.length;
+//        final AveTableRowEntry[] tableData = new AveTableRowEntry[numberOfRows];
 
 //        TWO POSSIBLE WAYS TO INSTNCIATE TABEL DATA:
 //        1. USING CLASSES AND AVEUPDATABLESELECTION
@@ -183,6 +182,8 @@ public class SharedDataModelUi extends JFrame {
 //            tableModel.addRow(rowData);
 //        }
 //      UI INITIALIZATION
+        String[] defaultValues = new String[]{stringData[1][1], choiceData.getElementAt(1), stringData[2][1], this.sharedDataModel.getElementAt(2), "false"};
+
         final JPanel rootJTables = new JPanel(new GridBagLayout());
         final GridBagConstraints gbc = new GridBagConstraints();
         final String[] tableNames = new String[]{"CompactTablePane", "FilledWidthTablePane", "VectorPane"};
@@ -196,15 +197,15 @@ public class SharedDataModelUi extends JFrame {
             switch (i) {
                 case 0:
                     // LayoutMode.COMPACT
-                    panel = new AveGenericTablePanel(columnNames, columnTypes, choiceModels, null, false);
+                    panel = new AveGenericTablePanel(columnNames, columnTypes, choiceModels, defaultValues, false);
                     break;
                 case 1:
                     // LayoutMode.LAST_COLUMN_FILL_WIDTH
-                    panel = new AveGenericTablePanel(columnNames, columnTypes, choiceModels, null, true);
+                    panel = new AveGenericTablePanel(columnNames, columnTypes, choiceModels, defaultValues, true);
                     break;
                 case 2:
                     // LayoutMode.VECTOR
-                    panel = new AveVectorPanel(columnNames, columnTypes, choiceModels, null);
+                    panel = new AveVectorPanel(columnNames, columnTypes, choiceModels, defaultValues);
                     break;
                 default:
                     throw new IllegalArgumentException();

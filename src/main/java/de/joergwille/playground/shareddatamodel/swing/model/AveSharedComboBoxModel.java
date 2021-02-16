@@ -24,11 +24,11 @@ import javax.swing.event.ListDataListener;
  * @author willejoerg
  * @param <E>
  */
+@SuppressWarnings("serial")
 public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
         implements MutableComboBoxModel<E>, ListModel<E>, ListDataListener,
         UpdateListener<E>, Serializable {
 
-    private static final long serialVersionUID = -3894432749074287792L;
     final protected EventListenerList listenerList; // copied from javax.swing.AbstractListModel
     private JComboBox<E> associatedComboBox;
     private boolean allowOneMutation;

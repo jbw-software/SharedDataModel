@@ -18,9 +18,9 @@ import javax.swing.AbstractListModel;
  *
  * @author willejoerg
  */
+@SuppressWarnings("serial")
 public class AbstractUniqueIterableDataModel<E> extends AbstractListModel<E> implements Iterable<E> {
 
-    private static final long serialVersionUID = 1L;
     private static final int DEFAULT_INITIAL_CAPACITY = 16; // use a power of 2
     private Set<E> objects;
     private boolean enabled;

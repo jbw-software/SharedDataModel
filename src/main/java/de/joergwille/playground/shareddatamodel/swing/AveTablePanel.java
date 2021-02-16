@@ -11,6 +11,9 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import javax.swing.BorderFactory;
@@ -19,6 +22,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -56,6 +60,7 @@ public abstract class AveTablePanel extends JPanel {
     private final JScrollPane scrollPane;
     private final MouseInputListener buttonsPanelResizeListener;
     private final ChangeListener viewportChangeListener;
+    private final FocusListener focusListener;
 
     public boolean verticalScrollBarIsShowing;
     private boolean autoCreateNewRowAfterLastEdit;
@@ -288,6 +293,7 @@ public abstract class AveTablePanel extends JPanel {
                 = new AveTable(this.tableModel, minHeightInRows, DEFAULT_COLUMN_HEADER_PADDING, DEFAULT_VIEWPORT_HEIGHT_MARGIN);
         table.setRowHeight(DEFAULT_ROW_HEIGHT);
         table.setAutoResizeMode(LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(this.layoutMode));
+        this.focusListener = new ClearSelectionFocusAdapter(table);
 
         // Automatically create initNbrOfRows but at least minNbrOfRows rows.
         for (int idx = 0; idx < initNbrOfRows; idx++) {
@@ -319,6 +325,7 @@ public abstract class AveTablePanel extends JPanel {
             this.buttonsPanel.addMouseListener(this.buttonsPanelResizeListener);
             this.buttonsPanel.addMouseMotionListener(this.buttonsPanelResizeListener);
         }
+        this.table.addFocusListener(this.focusListener);
     }
 
     private void removeListener() {
@@ -327,6 +334,7 @@ public abstract class AveTablePanel extends JPanel {
             this.buttonsPanel.removeMouseListener(this.buttonsPanelResizeListener);
             this.buttonsPanel.removeMouseMotionListener(this.buttonsPanelResizeListener);
         }
+        this.table.removeFocusListener(this.focusListener);
     }
 
     private void initUI() {
@@ -398,7 +406,7 @@ public abstract class AveTablePanel extends JPanel {
             }
         }
     }
-    
+
     private void resize() {
         if (super.getParent() != null) {
             final Dimension tablePanelSize = this.tablePanel.getPreferredSize();
@@ -460,9 +468,9 @@ public abstract class AveTablePanel extends JPanel {
     }
 
     /**
-     * Notifies this component that it no longer has a parent component.
-     * This method is called by the toolkit internally and should
-     * not be called directly by programs.
+     * Notifies this component that it no longer has a parent component. This
+     * method is called by the toolkit internally and should not be called
+     * directly by programs.
      *
      * @see #registerKeyboardAction
      */
@@ -494,7 +502,9 @@ public abstract class AveTablePanel extends JPanel {
     /**
      * Specifies if a new row is being added after the last row, when editing
      * last row finished.
-     * @param isAutoCreate if <i>true</i> a new row will be added after editing last row finished.
+     *
+     * @param isAutoCreate if <i>true</i> a new row will be added after editing
+     * last row finished.
      */
     public void setAutoCreateNewRowAfterLastEdit(final boolean isAutoCreate) {
         final AveTableRowEntry rowPrototype
@@ -504,8 +514,11 @@ public abstract class AveTablePanel extends JPanel {
     }
 
     /**
-     * Returns if a new row is being added after the last row, when editing last row finished.
-     * @return <i>true</i> if a row will be added after editing last row finished.
+     * Returns if a new row is being added after the last row, when editing last
+     * row finished.
+     *
+     * @return <i>true</i> if a row will be added after editing last row
+     * finished.
      */
     public boolean isAutoCreateNewRowAfterLastEdit() {
         return autoCreateNewRowAfterLastEdit;
@@ -562,7 +575,7 @@ public abstract class AveTablePanel extends JPanel {
 
         @Override
         public void mousePressed(MouseEvent e) {
-            if (e.getButton() == MouseEvent.BUTTON1) {
+            if (SwingUtilities.isLeftMouseButton(e)) {
                 startPointY = e.getPoint().y;
             }
         }
@@ -648,13 +661,36 @@ public abstract class AveTablePanel extends JPanel {
         }
     }
 
+    private static class ClearSelectionFocusAdapter extends FocusAdapter {
+
+        final JTable table;
+
+        public ClearSelectionFocusAdapter(JTable table) {
+            this.table = table;
+        }
+
+        @Override
+        public void focusLost(FocusEvent arg0) {
+            final Component component = arg0.getOppositeComponent();
+            // Do not clear focus if Add or Delete button are clicked.
+            if (component instanceof JButton
+                    && ("Delete".equals(((JButton) component).getText())
+                    || "Add".equals(((JButton) component).getText()))) {
+                return;
+            }
+            table.clearSelection();
+        }
+    }
+
     /**
-     * The LayoutMode enumeration specifies possible values for the layout of <code>AveTablePanel</code>.
-     * Following options are defined:
-     * COMPACT: layout table as compact as possible with respect to table rendering constraints and with row add- and delete buttons.
-     * LAST_COLUMN_FILL_WIDTH: layout table where the last column automatically resizes to parent width and with row add- and delete buttons.
-     * VECTOR: layout table as compact as possible with respect to table rendering constraints but without add- and delete buttons,
-     *         without vertical scrollbar and with only 1 row.
+     * The LayoutMode enumeration specifies possible values for the layout of
+     * <code>AveTablePanel</code>. Following options are defined: COMPACT:
+     * layout table as compact as possible with respect to table rendering
+     * constraints and with row add- and delete buttons. LAST_COLUMN_FILL_WIDTH:
+     * layout table where the last column automatically resizes to parent width
+     * and with row add- and delete buttons. VECTOR: layout table as compact as
+     * possible with respect to table rendering constraints but without add- and
+     * delete buttons, without vertical scrollbar and with only 1 row.
      */
     public static enum LayoutMode {
         COMPACT,

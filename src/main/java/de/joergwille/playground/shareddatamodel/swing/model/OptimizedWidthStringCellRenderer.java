@@ -1,9 +1,8 @@
 package de.joergwille.playground.shareddatamodel.swing.model;
 
 import java.awt.Component;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
@@ -17,16 +16,15 @@ import javax.swing.table.TableColumn;
  * @author willejoerg
  */
 @SuppressWarnings("serial")
-public class AveChoiceElementCellRenderer extends JComboBox<String> implements TableCellRenderer {
+public class OptimizedWidthStringCellRenderer extends DefaultTableCellRenderer {
 
     private static final class InstanceHolder {
 
-        static final AveChoiceElementCellRenderer INSTANCE = new AveChoiceElementCellRenderer();
+        static final OptimizedWidthStringCellRenderer INSTANCE = new OptimizedWidthStringCellRenderer();
     }
 
-    private AveChoiceElementCellRenderer() {
+    private OptimizedWidthStringCellRenderer() {
         super();
-        setOpaque(true);
     }
 
     /**
@@ -34,7 +32,7 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
      *
      * @return <code>AveChoiceElementCellRenderer</code> singelton object.
      */
-    public static AveChoiceElementCellRenderer getInstance() {
+    public static OptimizedWidthStringCellRenderer getInstance() {
         return InstanceHolder.INSTANCE;
     }
 
@@ -42,14 +40,9 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
     @SuppressWarnings({"rawtypes", "unchecked"})
     public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column) {
-        super.setFont(table.getFont());
-        AveUpdatableSelection updatableSelection = (AveUpdatableSelection) value;
-        super.setModel(new DefaultComboBoxModel(updatableSelection.toArray()));
-        super.setMaximumRowCount(Math.min(30, updatableSelection.sharedModel.size()));
 
-        // get PrototypeDisplayValue from AveUpdatableSelection amd use it to update column width.
-        this.setPrototypeDisplayValue((String) updatableSelection.getPrototypeDisplayValue());
-        
+        final Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
         // automatically resize column width
         final TableColumn tableColumn = table.getColumnModel().getColumn(column);
         final TableColumn resizingColumn = table.getTableHeader().getResizingColumn();
@@ -65,13 +58,8 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
             tableColumn.setPreferredWidth(prefColumnWidth);
             tableColumn.setWidth(tableColumn.getPreferredWidth());
         }
-        
-        this.setForeground((isSelected) ? table.getSelectionForeground() : table.getForeground());
-        this.setBackground((isSelected) ? table.getSelectionBackground() : table.getBackground());
 
-        this.setSelectedItem(updatableSelection.getSelectedItem());
-
-        return this;
+        return component;
     }
 
 }
