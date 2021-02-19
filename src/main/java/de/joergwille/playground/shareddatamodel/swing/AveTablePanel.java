@@ -389,13 +389,12 @@ public abstract class AveTablePanel extends JPanel {
 
             if (!LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(this.layoutMode)) {
 
-                // The state wether vertical ScrollBar is showing changed. If showing add some width to tables last column for ScrollBar or substract otherwise.
-                if (this.scrollPane.getVerticalScrollBarPolicy() != JScrollPane.VERTICAL_SCROLLBAR_NEVER
-                        && this.verticalScrollBarIsShowing != this.scrollPane.getVerticalScrollBar().isShowing()) {
-                    this.verticalScrollBarIsShowing = this.scrollPane.getVerticalScrollBar().isShowing();
-                    int scrollBarDelta = this.verticalScrollBarIsShowing ? this.scrollPane.getVerticalScrollBar().getWidth() : this.scrollPane.getVerticalScrollBar().getWidth() * (-1);
-                    this.table.setLastColumnExtraWidth(scrollBarDelta);
-                    this.table.doLayout();
+                if (this.scrollPane.getVerticalScrollBarPolicy() != JScrollPane.VERTICAL_SCROLLBAR_NEVER) {
+                    // Add an extra width to scrollPaneViewPortSize if vertical ScrollBar is showing.
+                    scrollPaneViewPortSize.width += this.scrollPane.getVerticalScrollBar().isShowing() ?
+                            this.scrollPane.getVerticalScrollBar().getWidth() : 0;
+//                // Add a constant extra width to gain space for vertical ScrollBar. 
+//                this.table.setLastColumnExtraWidth(this.scrollPane.getVerticalScrollBar().getWidth());
                 }
 
                 if (scrollPaneSize.width != scrollPaneViewPortSize.width) {
@@ -621,46 +620,6 @@ public abstract class AveTablePanel extends JPanel {
         }
     }
 
-    private static class ScrollOnlyWhenFocusedPane extends JScrollPane {
-
-        private final JPanel rootPanel;
-
-        public ScrollOnlyWhenFocusedPane(Component view, final JPanel rootPanel) {
-            super(view);
-            this.rootPanel = rootPanel;
-        }
-
-        @Override
-        protected void processMouseWheelEvent(MouseWheelEvent evt) {
-            final Component outerWidget = SwingUtilities.getAncestorOfClass(Component.class, this.rootPanel);
-
-            // Case 1: we don't have focus, so we don't scroll
-            Component innerWidget = getViewport().getView();
-            if (!innerWidget.hasFocus()) {
-                outerWidget.dispatchEvent(evt);
-            } else {
-                // Case 2: we have focus
-                JScrollBar innerBar = getVerticalScrollBar();
-                // Deal with horizontally scrolling widgets
-                if (!innerBar.isShowing()) {
-                    innerBar = getHorizontalScrollBar();
-                }
-
-                boolean wheelUp = evt.getWheelRotation() < 0;
-                boolean atTop = (innerBar.getValue() == 0);
-                boolean atBottom = (innerBar.getValue() == (innerBar.getMaximum() - innerBar.getVisibleAmount()));
-
-                // Case 2.1: we've already scrolled as much as we could
-                if ((wheelUp & atTop) || (!wheelUp & atBottom)) {
-                    outerWidget.dispatchEvent(evt);
-                } else {
-                    // Case 2.2: we'll scroll    
-                    super.processMouseWheelEvent(evt);
-                }
-            }
-        }
-    }
-
     private static class ClearSelectionFocusAdapter extends FocusAdapter {
 
         final JTable table;
@@ -672,8 +631,11 @@ public abstract class AveTablePanel extends JPanel {
         @Override
         public void focusLost(FocusEvent arg0) {
             final Component component = arg0.getOppositeComponent();
-            // Do not clear focus if Add or Delete button are clicked.
-            if (component instanceof JButton
+
+            // Do not clear focus if component's parent is fithin the same Table or
+            // if Add or Delete button from the same TablePanel are clicked.
+            if ((component != null && component.getParent() != null && component.getParent().equals(this.table))
+                    || component instanceof JButton
                     && ("Delete".equals(((JButton) component).getText())
                     || "Add".equals(((JButton) component).getText()))) {
                 return;
