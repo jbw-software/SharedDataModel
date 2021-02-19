@@ -70,6 +70,7 @@ public class AveTableModel extends AbstractTableModel {
      * @exception ArrayIndexOutOfBoundsException if the row was invalid
      */
     public void removeRow(int row) {
+        this.entries.get(row).removeNotify();
         this.entries.removeElementAt(row);
         fireTableRowsDeleted(row, row);
     }

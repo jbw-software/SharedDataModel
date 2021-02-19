@@ -36,14 +36,40 @@ public class AveTableRowEntry {
         return classes;
     }
 
+    /**
+     * Creates a <code>AveTableRowEntry</code> object.
+     *
+     * @param columnTypes    An array of <code>String</code> to define the sequence and type of each column in a row. 
+     *                       Each entry should be either <i>string</i>, <i>boolean</i> or <code>choice</code>.
+     */
     public AveTableRowEntry(final String[] columnTypes) {
         this(columnTypes, null, null);
     }
 
+    /**
+     * Creates a <code>AveTableRowEntry</code> object.
+     *
+     * @param columnTypes    An array of <code>String</code> to define the sequence and type of each column in a row. 
+     *                       Each entry should be either <i>string</i>, <i>boolean</i> or <i>choice</i>.
+     * @param choiceModels   An array of <code>AveUpdatableSelection</code> for specifying
+     *                       <code>AveChoiceElement</code> (JComboBox) columns. The sequence and number of <i>choiceModels</i>
+     *                       must match the occurrences of <i>choice</i> entries in <i>columnTypes</i>.
+     */
     public AveTableRowEntry(final String[] columnTypes, final AveSharedDataModel<String>[] choiceModels) {
         this(columnTypes, choiceModels, null);
     }
 
+    /**
+     * Creates a <code>AveTableRowEntry</code> object.
+     *
+     * @param columnTypes    An array of <code>String</code> to define the sequence and type of each column in a row. 
+     *                       Each entry should be either <i>string</i>, <i>boolean</i> or <i>choice</i>.
+     * @param choiceModels   An array of <code>AveUpdatableSelection</code> for specifying
+     *                       <code>AveChoiceElement</code> (JComboBox) columns. The sequence and number of <i>choiceModels</i>
+     *                       must match the occurrences of <i>choice</i> entries in <i>columnTypes</i>.
+     * @param defaultValues  An array of <code>String</code> to define default values. The sequence and number must match
+     *                       the entries in <i>columnTypes</i>. 
+     */
     public AveTableRowEntry(final String[] columnTypes, final AveSharedDataModel<String>[] choiceModels, final String[] defaultValues) {
         Class<?>[] classes = columnTypesToClasses(columnTypes);
 
@@ -87,31 +113,37 @@ public class AveTableRowEntry {
     }
 
     /**
+     * Creates a <code>AveTableRowEntry</code> object.
      *
-     * @param columnTypes    An array of <code>String</code> to define the sequence in
-     *                       which the <code>stringValues</code> and <code>comboBoxValues</code> are stored
-     *                       in the row.
-     * @param stringValues   An array of <code>String</code> for String columns.
-     * @param booleanValues  An array of <code>Boolean</code> for CheckBox columns.
-     * @param comboBoxValues An array of <code>AveUpdatableSelection</code> for
-     *                       JComboBox columns.
+     * @param columnTypes    An array of <code>String</code> to define the sequence and type of each column in a row. 
+     *                       Each entry should be either <i>string</i>, <i>boolean</i> or <i>choice</i>.
+     * @param stringValues   An array of <code>String</code> for String columns. The sequence and number of <i>stringValues</i>
+     *                       must match the occurrences of <i>String</i> entries in <i>columnTypes</i>.
+     * @param booleanValues  An array of <code>Boolean</code> for CheckBox columns. The sequence and number of <i>booleanValues</i>
+     *                       must match the occurrences of <i>Boolean</i> entries in <i>columnTypes</i>.
+     * @param choiceModels   An array of <code>AveUpdatableSelection</code> for specifying
+     *                       <code>AveChoiceElement</code> (JComboBox) columns. The sequence and number of <i>choiceModels</i>
+     *                       must match the occurrences of <i>choice</i> entries in <i>columnTypes</i>.
      */
-    public AveTableRowEntry(String[] columnTypes, String[] stringValues, Boolean[] booleanValues, AveUpdatableSelection<?>[] comboBoxValues) {
-        this(columnTypesToClasses(columnTypes), stringValues, booleanValues, comboBoxValues);
+    public AveTableRowEntry(String[] columnTypes, String[] stringValues, Boolean[] booleanValues, AveUpdatableSelection<?>[] choiceModels) {
+        this(columnTypesToClasses(columnTypes), stringValues, booleanValues, choiceModels);
     }
 
     /**
-     *
-     * @param classes        An array of <code>Class</code> to define the sequence in
-     *                       which the <code>stringValues</code> and <code>comboBoxValues</code> are stored
-     *                       in the row.
-     * @param stringValues   An array of <code>String</code> for String columns.
-     * @param booleanValues  An array of <code>Boolean</code> for CheckBox columns.
-     * @param comboBoxValues An array of <code>AveUpdatableSelection</code> for
-     *                       JComboBox columns.
+     * Creates a <code>AveTableRowEntry</code> object.
+     * 
+     * @param classes        An array of <i>Classes</i> to define the sequence and type of each column in a row.
+     *                       Each entry should be either <i>String.class</i>, <i>Boolean.class</i> or <i>AveUpdatableSelection.class</i>.
+     * @param stringValues   An array of <code>String</code> for String columns. The sequence and number of <i>stringValues</i>
+     *                       must match the occurrences of <i>String</i> entries in <i>columnTypes</i>.
+     * @param booleanValues  An array of <code>Boolean</code> for CheckBox columns. The sequence and number of <i>booleanValues</i>
+     *                       must match the occurrences of <i>Boolean</i> entries in <i>columnTypes</i>.
+     * @param choiceModels   An array of <code>AveUpdatableSelection</code> for specifying
+     *                       <code>AveChoiceElement</code> (JComboBox) columns. The sequence and number of <i>choiceModels</i>
+     *                       must match the occurrences of <i>choice</i> entries in <i>columnTypes</i>.
      */
-    public AveTableRowEntry(Class<?>[] classes, String[] stringValues, Boolean[] booleanValues, AveUpdatableSelection<?>[] comboBoxValues) {
-        if (classes.length != stringValues.length + comboBoxValues.length + booleanValues.length) {
+    public AveTableRowEntry(Class<?>[] classes, String[] stringValues, Boolean[] booleanValues, AveUpdatableSelection<?>[] choiceModels) {
+        if (classes.length != stringValues.length + choiceModels.length + booleanValues.length) {
             throw new IndexOutOfBoundsException("The length of the 'classes' array, which specifies the sequence of " +
                     "the other given arguments, does not match the length of these arguments.");
         }
@@ -119,7 +151,7 @@ public class AveTableRowEntry {
         int c = 0, s = 0, b = 0, m = 0;
         for (Class<?> clazz : classes) {
             if (clazz.equals(AveUpdatableSelection.class)) {
-                this.rowData[c] = comboBoxValues[m++];
+                this.rowData[c] = choiceModels[m++];
             } else if (clazz.equals(String.class)) {
                 this.rowData[c] = stringValues[s++];
             } else if (clazz.equals(Boolean.class)) {
@@ -168,6 +200,18 @@ public class AveTableRowEntry {
 
     public Object[] getRowData() {
         return this.rowData;
+    }
+    
+    /**
+     * Notifies this object that it is no longer being used.
+     * This method should be called from the <code>AveTable</code> removeNotify() when it removes this row.
+     */
+    public void removeNotify() {
+        for (Object row : this.rowData) {
+            if (row instanceof AveUpdatableSelection) {
+                ((AveUpdatableSelection) row).removeNotify();
+            }
+        }
     }
 
 }

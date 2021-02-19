@@ -43,20 +43,26 @@ public class OptimizedWidthStringCellRenderer extends DefaultTableCellRenderer {
 
         final Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-        // automatically resize column width
+        // Automatically resize column width or use manually size.
+        // If once manual resized then do not automatically layout.
         final TableColumn tableColumn = table.getColumnModel().getColumn(column);
         final TableColumn resizingColumn = table.getTableHeader().getResizingColumn();
-
-        int prefColumnWidth = super.getPreferredSize().width;
-        if (resizingColumn != null && tableColumn.equals(resizingColumn)
-                && tableColumn.getWidth() >= tableColumn.getMinWidth()) {
-            prefColumnWidth = tableColumn.getWidth();
-            tableColumn.setIdentifier("ColumnIsManuallyResized");
-        }
-        if (tableColumn.getPreferredWidth() != prefColumnWidth
-                && !"ColumnIsManuallyResized".equals(tableColumn.getIdentifier())) {
-            tableColumn.setPreferredWidth(prefColumnWidth);
-            tableColumn.setWidth(tableColumn.getPreferredWidth());
+        
+        if (JTable.AUTO_RESIZE_LAST_COLUMN != table.getAutoResizeMode() &&
+                 column != (table.getColumnModel().getColumnCount() - 1)) {
+            int prefColumnWidth = super.getPreferredSize().width;
+            // Check if column is manually being resized but still wider than minWidth.
+            if (resizingColumn != null && tableColumn.equals(resizingColumn) &&
+                     tableColumn.getWidth() >= tableColumn.getMinWidth()) {
+                prefColumnWidth = tableColumn.getWidth();
+                tableColumn.setIdentifier("ColumnIsManuallyResized");
+            }
+            // Automitcally resize column.
+            if (tableColumn.getPreferredWidth() != prefColumnWidth &&
+                     !"ColumnIsManuallyResized".equals(tableColumn.getIdentifier())) {
+                tableColumn.setPreferredWidth(prefColumnWidth);
+                tableColumn.setWidth(tableColumn.getPreferredWidth());
+            }
         }
 
         return component;

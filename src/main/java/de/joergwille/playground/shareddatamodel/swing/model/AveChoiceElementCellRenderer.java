@@ -42,34 +42,40 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
     @SuppressWarnings({"rawtypes", "unchecked"})
     public Component getTableCellRendererComponent(JTable table, Object value,
             boolean isSelected, boolean hasFocus, int row, int column) {
-        super.setFont(table.getFont());
         AveUpdatableSelection updatableSelection = (AveUpdatableSelection) value;
         super.setModel(new DefaultComboBoxModel(updatableSelection.toArray()));
         super.setMaximumRowCount(Math.min(30, updatableSelection.sharedModel.size()));
 
-        // get PrototypeDisplayValue from AveUpdatableSelection amd use it to update column width.
+        // get PrototypeDisplayValue from AveUpdatableSelection and use it to update column width.
         this.setPrototypeDisplayValue((String) updatableSelection.getPrototypeDisplayValue());
         
-        // automatically resize column width
+        // Automatically resize column width or use manually size.
+        // If once manual resized then do not automatically layout
+        // until updatableSelection was upated.
         final TableColumn tableColumn = table.getColumnModel().getColumn(column);
         final TableColumn resizingColumn = table.getTableHeader().getResizingColumn();
-
         int prefColumnWidth = super.getPreferredSize().width;
+        // Check if column is manually being resized but still wider than minWidth.
         if (resizingColumn != null && tableColumn.equals(resizingColumn)
                 && tableColumn.getWidth() >= tableColumn.getMinWidth()) {
             prefColumnWidth = tableColumn.getWidth();
             tableColumn.setIdentifier("ColumnIsManuallyResized");
         }
+        // Check if updatableSelection has been updated.
+        if (updatableSelection.isSelectionUpdated()) {
+            tableColumn.setIdentifier(tableColumn.getHeaderValue());
+        }
+        // Automitcally resize column.
         if (tableColumn.getPreferredWidth() != prefColumnWidth
                 && !"ColumnIsManuallyResized".equals(tableColumn.getIdentifier())) {
             tableColumn.setPreferredWidth(prefColumnWidth);
             tableColumn.setWidth(tableColumn.getPreferredWidth());
         }
         
+        this.setSelectedItem(updatableSelection.getSelectedItem());
+
         this.setForeground((isSelected) ? table.getSelectionForeground() : table.getForeground());
         this.setBackground((isSelected) ? table.getSelectionBackground() : table.getBackground());
-
-        this.setSelectedItem(updatableSelection.getSelectedItem());
 
         return this;
     }

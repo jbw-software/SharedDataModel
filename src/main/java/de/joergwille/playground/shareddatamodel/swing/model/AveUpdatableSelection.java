@@ -23,6 +23,7 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
     private boolean allowEmptySelection;
     private boolean matchSelectionByString;
     private E prototypeDisplayValue;
+    private boolean selectionUpdated;
 
     /**
      *
@@ -107,30 +108,35 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
                 newSelection = newItems.get(indexInCurrentItems);
             }
             this.setSelectedItem(newSelection);
+            this.selectionUpdated = true;
         }
     }
 
+    /**
+     * Notifies this object that it is no longer being used.
+     * This method should be called from the components removeNotify() method which uses this object as data model.
+     */
     public void removeNotify() {
         this.removeListener();
     }
 
+    /**
+     * Returns the PrototypeDisplayValue which can be uses in a <code>JComboBox</code>.
+     * 
+     * @return the PrototypeDisplayValue.
+     */
     public E getPrototypeDisplayValue() {
         return this.prototypeDisplayValue;
     }
     
+    /**
+     * Sets the PrototypeDisplayValue which can be uses in a <code>JComboBox</code>.
+     *
+     * @param prototypeDisplayValue the String with the most charcaters to be used as the PrototypeDisplayValue in
+     * a <code>JComboBox</code>.
+     */
     public void setPrototypeDisplayValue(E prototypeDisplayValue) {
         this.prototypeDisplayValue = prototypeDisplayValue;
-    }
-
-    /**
-     * Set the value of the selected item. The selected item may be null.
-     *
-     * @param anObject The selected value or null for no selection.
-     */
-    // implements javax.swing.ComboBoxModel
-    @SuppressWarnings("unchecked")
-    public void setSelectedItem(Object anObject) {
-        this.setSelected((E) anObject);
     }
 
     /**
@@ -143,7 +149,24 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
     public Object getSelectedItem() {
         return this.selectedItem;
     }
-
+    
+    /**
+     * Set the value of the selected item. The selected item may be null.
+     *
+     * @param anObject The selected value or null for no selection.
+     */
+    // implements javax.swing.ComboBoxModel
+    @SuppressWarnings("unchecked")
+    public void setSelectedItem(Object anObject) {
+        this.setSelected((E) anObject);
+    }    
+    
+    /**
+     * Get the value of the selected item with defined type.
+     * The selected item may be null if {@code allowEmptySelection} is {@code true}.
+     *
+     * @return The selected value or null.
+     */
     public E getSelectedTypedItem() {
         Object obj = this.getSelectedItem();
         int index = this.sharedModel.getIndexOf(obj);
@@ -151,6 +174,21 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
             return null;
         }
         return this.sharedModel.get(index);
+    }
+
+    /**
+     * Returns <i>true</i> if these selection has been updated by a <code>UpdateListener</code> event.
+     * The internal flag is being resetted in this method, therfore the request is only valid once before an update occurs.
+     * 
+     * @return <i>true</i> if these selection has been updated.
+     */
+    public boolean isSelectionUpdated() {
+        // Reset selectionUpdated to false.
+        if (selectionUpdated) {
+            selectionUpdated = false;
+            return true;
+        }
+        return false;
     }
 
     /**

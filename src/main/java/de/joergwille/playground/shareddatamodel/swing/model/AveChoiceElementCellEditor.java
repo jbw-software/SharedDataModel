@@ -33,7 +33,6 @@ public class AveChoiceElementCellEditor extends AbstractCellEditor implements Ta
     private AveChoiceElementCellEditor() {
         super();
         this.comboBox = new JComboBox<>();
-        this.comboBox.setRequestFocusEnabled(false);
         this.comboBox.setOpaque(true);
     }
 
@@ -56,16 +55,6 @@ public class AveChoiceElementCellEditor extends AbstractCellEditor implements Ta
     }
 
     @Override
-    public boolean stopCellEditing() {
-        if (comboBox.isEditable()) {
-            // Commit edited value.
-            comboBox.actionPerformed(new ActionEvent(
-                    AveChoiceElementCellEditor.this, 0, ""));
-        }
-        return super.stopCellEditing();
-    }
-
-    @Override
     public Object getCellEditorValue() {
         return this.updatableSelection.getSelectedItem();
     }
@@ -77,16 +66,13 @@ public class AveChoiceElementCellEditor extends AbstractCellEditor implements Ta
         if (!(value instanceof AveUpdatableSelection)) {
             return this.comboBox;
         }
-
-        this.comboBox.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
-        this.comboBox.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
-
+        
         this.updatableSelection = (AveUpdatableSelection) value;
         this.comboBox.setModel(new AveSharedComboBoxModel<>(this.updatableSelection.sharedModel));
         this.comboBox.setPrototypeDisplayValue(this.updatableSelection.getPrototypeDisplayValue());
         this.comboBox.setSelectedItem(this.updatableSelection.getSelectedItem());
         this.comboBox.addActionListener(this);
-
+       
         return this.comboBox;
     }
 
@@ -94,6 +80,7 @@ public class AveChoiceElementCellEditor extends AbstractCellEditor implements Ta
     public void actionPerformed(ActionEvent event) {
         JComboBox<?> aComboBox = (JComboBox) event.getSource();
         this.updatableSelection.setSelectedItem(aComboBox.getSelectedItem());
+        super.stopCellEditing();
     }
 
 }
