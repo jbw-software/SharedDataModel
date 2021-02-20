@@ -385,24 +385,20 @@ public abstract class AveTablePanel extends JPanel {
     private void viewportChanged(ChangeEvent event) {
         if (!LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(this.layoutMode)) {
             final Dimension scrollPaneViewPortSize = this.scrollPane.getViewport().getViewSize();
-            final Dimension scrollPaneSize = this.scrollPane.getPreferredSize();
+            int scrollPaneWidth = scrollPaneViewPortSize.width + this.scrollPane.getInsets().left + this.scrollPane.getInsets().right;
 
-            if (!LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(this.layoutMode)) {
-
-                if (this.scrollPane.getVerticalScrollBarPolicy() != JScrollPane.VERTICAL_SCROLLBAR_NEVER) {
-                    // Add an extra width to scrollPaneViewPortSize if vertical ScrollBar is showing.
-                    scrollPaneViewPortSize.width += this.scrollPane.getVerticalScrollBar().isShowing() ?
-                            this.scrollPane.getVerticalScrollBar().getWidth() : 0;
+            if (this.scrollPane.getVerticalScrollBarPolicy() != JScrollPane.VERTICAL_SCROLLBAR_NEVER) {
+                // Add an extra width to scrollPaneViewPortSize if vertical ScrollBar is showing.
+                scrollPaneWidth += this.scrollPane.getVerticalScrollBar().isShowing()
+                        ? this.scrollPane.getVerticalScrollBar().getWidth() : 0;
 //                // Add a constant extra width to gain space for vertical ScrollBar. 
 //                this.table.setLastColumnExtraWidth(this.scrollPane.getVerticalScrollBar().getWidth());
-                }
-
-                if (scrollPaneSize.width != scrollPaneViewPortSize.width) {
-                    scrollPaneSize.width = scrollPaneViewPortSize.width;
-                    this.scrollPane.setPreferredSize(scrollPaneSize);
-                    this.resize();
-                }
             }
+
+            final Dimension scrollPaneSize = this.scrollPane.getPreferredSize();
+            scrollPaneSize.width = scrollPaneWidth;
+            this.scrollPane.setPreferredSize(scrollPaneSize);
+            this.resize();
         }
     }
 
@@ -412,11 +408,16 @@ public abstract class AveTablePanel extends JPanel {
             final Insets insets = super.getInsets();
             int w = tablePanelSize.width - insets.left - insets.right;
             int h = tablePanelSize.height - insets.top - insets.bottom;
+            super.setPreferredSize(new Dimension(tablePanelSize.width, tablePanelSize.height));
 
             // Do absolute layout.
-            this.tablePanel.setBounds(insets.left, insets.top, w, h);
-            super.setPreferredSize(new Dimension(tablePanelSize.width, tablePanelSize.height));
-            super.getParent().revalidate();
+            final Rectangle preferredBounds = new Rectangle(insets.left, insets.top, w, h);
+            final Rectangle tablePanelBounds = this.tablePanel.getBounds();
+
+            if (!tablePanelBounds.equals(preferredBounds)) {
+                this.tablePanel.setBounds(preferredBounds);
+                super.getParent().revalidate();
+            }
         }
     }
 

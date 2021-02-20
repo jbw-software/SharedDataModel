@@ -321,8 +321,8 @@ public class AveTable extends JTable {
         public Component getTableCellRendererComponent(
                 JTable table, Object value, boolean isSelected,
                 boolean hasFocus, int row, int column) {
-            final Component component =
-                    renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            final Component component
+                    = renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             final TableColumnModel columnModel = table.getColumnModel();
             final TableColumn tableColumn = columnModel.getColumn(column);
 
@@ -331,8 +331,8 @@ public class AveTable extends JTable {
 
             // Make sure that the width of all columns is at least as wide as the totalMinimumWidth,
             // which might have been set externally (e.g. because add- and remove buttons need more space).
-            if (columnModel.getTotalColumnWidth() < this.totalMinimumWidth &&
-                    column == (columnModel.getColumnCount() - 1)) {
+            if (columnModel.getTotalColumnWidth() < this.totalMinimumWidth
+                    && column == (columnModel.getColumnCount() - 1)) {
                 minColumnWidth = tableColumn.getWidth() + this.totalMinimumWidth - columnModel.getTotalColumnWidth();
             }
 
@@ -350,9 +350,9 @@ public class AveTable extends JTable {
 
     /**
      * A mouse listener class to handle mouse events JTable's column header.
-     * Resets the columns identifier if a double click is being detected.
-     * Column identifiers have been used in custom renderer to flag
-     * a column has manually been resized.
+     * Resets the columns identifier if a double click is being detected. Column
+     * identifiers have been used in custom renderer to flag a column has
+     * manually been resized.
      */
     private class TableHeaderMouseListener extends MouseAdapter {
 

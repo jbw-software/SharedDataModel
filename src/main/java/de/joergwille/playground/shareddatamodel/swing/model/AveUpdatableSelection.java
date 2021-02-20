@@ -94,6 +94,7 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
             
             // use PrototypeDisplayValue from AveSharedDataModel
             this.setPrototypeDisplayValue(prototypeDisplayValue);
+            this.selectionUpdated = true;
 
             Object newSelection = null;
             int indexInCurrentItems = currentItems.indexOf(this.selectedItem);
@@ -108,7 +109,6 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
                 newSelection = newItems.get(indexInCurrentItems);
             }
             this.setSelectedItem(newSelection);
-            this.selectionUpdated = true;
         }
     }
 

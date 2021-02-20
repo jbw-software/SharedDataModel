@@ -45,25 +45,26 @@ public class OptimizedWidthStringCellRenderer extends DefaultTableCellRenderer {
 
         // Automatically resize column width or use manually size.
         // If once manual resized then do not automatically layout.
+// Skip resizing if AUTO_RESIZE_LAST_COLUMN and column is last column.
+//        if (JTable.AUTO_RESIZE_LAST_COLUMN != table.getAutoResizeMode()
+//                && column != (table.getColumnModel().getColumnCount() - 1)) {
         final TableColumn tableColumn = table.getColumnModel().getColumn(column);
         final TableColumn resizingColumn = table.getTableHeader().getResizingColumn();
-        
-        if (JTable.AUTO_RESIZE_LAST_COLUMN != table.getAutoResizeMode() &&
-                 column != (table.getColumnModel().getColumnCount() - 1)) {
-            int prefColumnWidth = super.getPreferredSize().width;
-            // Check if column is manually being resized but still wider than minWidth.
-            if (resizingColumn != null && tableColumn.equals(resizingColumn) &&
-                     tableColumn.getWidth() >= tableColumn.getMinWidth()) {
-                prefColumnWidth = tableColumn.getWidth();
-                tableColumn.setIdentifier("ColumnIsManuallyResized");
-            }
-            // Automitcally resize column.
-            if (tableColumn.getPreferredWidth() != prefColumnWidth &&
-                     !"ColumnIsManuallyResized".equals(tableColumn.getIdentifier())) {
-                tableColumn.setPreferredWidth(prefColumnWidth);
-                tableColumn.setWidth(tableColumn.getPreferredWidth());
-            }
+
+        int prefColumnWidth = super.getPreferredSize().width;
+        // Check if column is manually being resized but still wider than minWidth.
+        if (resizingColumn != null && tableColumn.equals(resizingColumn)
+                && tableColumn.getWidth() >= tableColumn.getMinWidth()) {
+            prefColumnWidth = tableColumn.getWidth();
+            tableColumn.setIdentifier("ColumnIsManuallyResized");
         }
+        // Automitcally resize column.
+        if (tableColumn.getPreferredWidth() != prefColumnWidth
+                && !"ColumnIsManuallyResized".equals(tableColumn.getIdentifier())) {
+            tableColumn.setPreferredWidth(prefColumnWidth);
+            tableColumn.setWidth(tableColumn.getPreferredWidth());
+        }
+//        }
 
         return component;
     }
