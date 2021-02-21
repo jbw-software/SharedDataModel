@@ -389,10 +389,10 @@ public abstract class AveTablePanel extends JPanel {
 
             if (this.scrollPane.getVerticalScrollBarPolicy() != JScrollPane.VERTICAL_SCROLLBAR_NEVER) {
                 // Add an extra width to scrollPaneViewPortSize if vertical ScrollBar is showing.
-                scrollPaneWidth += this.scrollPane.getVerticalScrollBar().isShowing()
-                        ? this.scrollPane.getVerticalScrollBar().getWidth() : 0;
-//                // Add a constant extra width to gain space for vertical ScrollBar. 
-//                this.table.setLastColumnExtraWidth(this.scrollPane.getVerticalScrollBar().getWidth());
+//                scrollPaneWidth += this.scrollPane.getVerticalScrollBar().isShowing()
+//                        ? this.scrollPane.getVerticalScrollBar().getWidth() : 0;
+                // Add a constant extra width to gain space for vertical ScrollBar. 
+                this.table.setLastColumnExtraWidth(this.scrollPane.getVerticalScrollBar().getWidth());
             }
 
             final Dimension scrollPaneSize = this.scrollPane.getPreferredSize();
@@ -416,7 +416,7 @@ public abstract class AveTablePanel extends JPanel {
 
             if (!tablePanelBounds.equals(preferredBounds)) {
                 this.tablePanel.setBounds(preferredBounds);
-                super.getParent().revalidate();
+                super.revalidate();
             }
         }
     }
