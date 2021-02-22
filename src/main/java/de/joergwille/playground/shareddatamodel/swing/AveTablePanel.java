@@ -388,11 +388,17 @@ public abstract class AveTablePanel extends JPanel {
             int scrollPaneWidth = scrollPaneViewPortSize.width + this.scrollPane.getInsets().left + this.scrollPane.getInsets().right;
 
             if (this.scrollPane.getVerticalScrollBarPolicy() != JScrollPane.VERTICAL_SCROLLBAR_NEVER) {
-                // Add an extra width to scrollPaneViewPortSize if vertical ScrollBar is showing.
-//                scrollPaneWidth += this.scrollPane.getVerticalScrollBar().isShowing()
-//                        ? this.scrollPane.getVerticalScrollBar().getWidth() : 0;
-                // Add a constant extra width to gain space for vertical ScrollBar. 
-                this.table.setLastColumnExtraWidth(this.scrollPane.getVerticalScrollBar().getWidth());
+                // Add an extra width if vertical ScrollBar is showing to render ScrollBar on the right after last column.
+                int barWidth = this.scrollPane.getVerticalScrollBar().isShowing() ? this.scrollPane.getVerticalScrollBar().getWidth() : 0;
+                // If last column is of class String then use BestWidthStringCellRenderer to compensate ScrollBar width
+                // else simply resize scrollPaneWidth, which for some scrollPane height values occasionally renders scrollBar within last column. 
+                if (barWidth > 0) {
+                    if (String.class.equals(this.table.getColumnClass(this.table.getColumnCount() - 1))) {
+                        this.table.setLastColumnExtraWidth(barWidth);
+                    } else {
+                        scrollPaneWidth += barWidth;
+                    }
+                }
             }
 
             final Dimension scrollPaneSize = this.scrollPane.getPreferredSize();

@@ -16,14 +16,14 @@ import javax.swing.table.TableColumn;
  * @author willejoerg
  */
 @SuppressWarnings("serial")
-public class OptimizedWidthStringCellRenderer extends DefaultTableCellRenderer {
+public class BestWidthStringCellRenderer extends DefaultTableCellRenderer {
 
     private static final class InstanceHolder {
 
-        static final OptimizedWidthStringCellRenderer INSTANCE = new OptimizedWidthStringCellRenderer();
+        static final BestWidthStringCellRenderer INSTANCE = new BestWidthStringCellRenderer();
     }
 
-    private OptimizedWidthStringCellRenderer() {
+    private BestWidthStringCellRenderer() {
         super();
     }
 
@@ -32,7 +32,7 @@ public class OptimizedWidthStringCellRenderer extends DefaultTableCellRenderer {
      *
      * @return <code>AveChoiceElementCellRenderer</code> singelton object.
      */
-    public static OptimizedWidthStringCellRenderer getInstance() {
+    public static BestWidthStringCellRenderer getInstance() {
         return InstanceHolder.INSTANCE;
     }
 
@@ -43,29 +43,30 @@ public class OptimizedWidthStringCellRenderer extends DefaultTableCellRenderer {
 
         final Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-        // Automatically resize column width or use manually size.
-        // If once manual resized then do not automatically layout.
-// Skip resizing if AUTO_RESIZE_LAST_COLUMN and column is last column.
-//        if (JTable.AUTO_RESIZE_LAST_COLUMN != table.getAutoResizeMode()
-//                && column != (table.getColumnModel().getColumnCount() - 1)) {
-        final TableColumn tableColumn = table.getColumnModel().getColumn(column);
-        final TableColumn resizingColumn = table.getTableHeader().getResizingColumn();
-
-        int prefColumnWidth = super.getPreferredSize().width;
-        // Check if column is manually being resized but still wider than minWidth.
-        if (resizingColumn != null && tableColumn.equals(resizingColumn)
-                && tableColumn.getWidth() >= tableColumn.getMinWidth()) {
-            prefColumnWidth = tableColumn.getWidth();
-            tableColumn.setIdentifier("ColumnIsManuallyResized");
+        if (!(table instanceof AveTable)) {
+            return component;
         }
-        // Automitcally resize column.
-        if (tableColumn.getPreferredWidth() != prefColumnWidth
-                && !"ColumnIsManuallyResized".equals(tableColumn.getIdentifier())) {
+
+        final AveTable aveTable = (AveTable) table;
+        final TableColumn tableColumn = table.getColumnModel().getColumn(column);
+
+        if (!("ColumnIsManuallyResized".equals(tableColumn.getIdentifier()))) {
+            // Check if manually being resized and if so remember this in column identifier.
+            final TableColumn resizingColumn = table.getTableHeader().getResizingColumn();
+            if (resizingColumn != null && tableColumn.equals(resizingColumn)) {
+                tableColumn.setIdentifier("ColumnIsManuallyResized");
+                return component;
+            }
+            // Automatically resize column.
+            int prefColumnWidth = aveTable.getStringColumnsBestWidth(column) > 0 ? aveTable.getStringColumnsBestWidth(column) : super.getPreferredSize().width;
+
+            if (column == (table.getColumnModel().getColumnCount() - 1)) {
+                prefColumnWidth += aveTable.getLastColumnExtraWidth();
+            }
+
             tableColumn.setPreferredWidth(prefColumnWidth);
             tableColumn.setWidth(tableColumn.getPreferredWidth());
         }
-//        }
-
         return component;
     }
 

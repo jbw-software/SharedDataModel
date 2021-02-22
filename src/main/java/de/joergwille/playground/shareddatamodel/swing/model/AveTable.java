@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Arrays;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
@@ -39,6 +40,7 @@ public class AveTable extends JTable {
     private int viewportHeightMargin;
     private AveTableRowEntry rowPrototype;
     private int lastColumnExtraWidth;
+    private int[] stringColumnsBestWidth;
 
     public AveTable(final TableModel tableModel) {
         this(tableModel, Math.max(DEFAULT_VISIBLE_ROW_COUNT, tableModel.getRowCount()));
@@ -63,8 +65,10 @@ public class AveTable extends JTable {
         // Initially empty. It get initalized in setAutoCreateNewRowAfterLastEdit(). Table needs to know row data, when rows are created.
         this.rowPrototype = null;
 
-        // Initially empty. Value gets set in setLastColumnExtraWidth() to add extra width for last column, e.g. to gain space for vertical ScrollBar.
+        // Initially empty. Value gets set in setLastColumnExtraWidth() to add extra width for lastColumn tableColumn, e.g. to gain space for vertical ScrollBar.
         this.lastColumnExtraWidth = 0;
+
+        this.stringColumnsBestWidth = new int[tableModel.getColumnCount()];
 
         // JTable uses some default values for PreferredScrollableViewportSize. Do not use these.
         super.setPreferredScrollableViewportSize(null);
@@ -85,7 +89,7 @@ public class AveTable extends JTable {
         super.setDefaultRenderer(AveUpdatableSelection.class, AveChoiceElementCellRenderer.getInstance());
         super.setDefaultEditor(AveUpdatableSelection.class, AveChoiceElementCellEditor.getInstance());
         // ...and for String values.
-        super.setDefaultRenderer(String.class, OptimizedWidthStringCellRenderer.getInstance());
+        super.setDefaultRenderer(String.class, BestWidthStringCellRenderer.getInstance());
 
         // Configure renderer for ColumnHeaders.
         super.getTableHeader().setDefaultRenderer(this.minWidthHeaderRenderer);
@@ -101,6 +105,21 @@ public class AveTable extends JTable {
         super.getTableHeader().removeMouseListener(this.tableHeaderMouseListener);
     }
 
+    // Calculate the number of pixels for the widest string in a column.
+    private void calculateStringColumnsBestWidth(int columnIdx) {
+        if (super.getColumnClass(columnIdx).equals(String.class)) {
+            int stringColumnWidth = 0;
+            for (int rowIdx = 0; rowIdx < super.getRowCount(); rowIdx++) {
+                final String string = (String) super.getModel().getValueAt(rowIdx, columnIdx);
+                final JLabel label = (JLabel) this.getCellRenderer(rowIdx, columnIdx).getTableCellRendererComponent(this, string, false, false, rowIdx, columnIdx);
+                stringColumnWidth = Math.max(stringColumnWidth, label.getPreferredSize().width);
+            }
+            this.stringColumnsBestWidth[columnIdx] = stringColumnWidth;
+        } else {
+            this.stringColumnsBestWidth[columnIdx] = 0;
+        }
+    }
+
     /**
      * Notifies this component that it no longer has a parent component. This
      * method is called by the toolkit internally and should not be called
@@ -111,7 +130,7 @@ public class AveTable extends JTable {
     @Override
     public void removeNotify() {
         this.removeListener();
-        
+
         // clean up all rows, which themselves can clean up all listeners.
         for (int i = 0; i < this.getModel().getRowCount(); i++) {
             this.getModel().removeRow(i);
@@ -155,14 +174,43 @@ public class AveTable extends JTable {
      */
     @Override
     public void doLayout() {
-        // Upon resizing, give all resizing space to last column, solution taken from
-        // http://stackoverflow.com/questions/16368343/jtable-resize-only-selected-column-when-container-size-changes
+        // Upon resizing, give all resizing space to lastColumn tableColumn, solution taken from
+        // http://stackoverflow.com/questions/16368343/jtable-resize-only-selected-tableColumn-when-container-size-changes
         if (this.autoResizeMode && super.tableHeader.getResizingColumn() == null) {
             final TableColumnModel tcm = super.getColumnModel();
             final int delta = getParent().getWidth() - tcm.getTotalColumnWidth();
-            final TableColumn last = tcm.getColumn(tcm.getColumnCount() - 1);
-            last.setPreferredWidth(last.getPreferredWidth() + delta);
-            last.setWidth(last.getPreferredWidth());
+            final TableColumn lastColumn = tcm.getColumn(tcm.getColumnCount() - 1);
+            final int lastColumnBestWidth = lastColumn.getPreferredWidth() + delta;
+            // Check if lastColumn is still wider than minWidth and
+            // if not steal enough width from widest column.
+            if (lastColumnBestWidth < lastColumn.getMinWidth()) {
+                // Collect possible width each column can be reduced down to minimum width.
+                int[][] rangeByIdx = new int[lastColumn.getModelIndex()][];
+                for (int idx = 0; idx < lastColumn.getModelIndex(); idx++) {
+                    rangeByIdx[idx] = new int[2];
+                    rangeByIdx[idx][0] = idx;
+                    rangeByIdx[idx][1] = tcm.getColumn(idx).getPreferredWidth() - tcm.getColumn(idx).getMinWidth();
+                }
+                // Sort 2d array to have the column ascending order by possible reduction width.
+                Arrays.sort(rangeByIdx, (int[] first, int[] second) -> {
+                    int c = first[1] > second[1] ? 1 : -1;
+                    return c;
+                });
+                // Steal width from columns, starting with widest column, but preserving column minimum width.
+                int overrun = lastColumn.getMinWidth() - lastColumnBestWidth;
+                int idx = lastColumn.getModelIndex();
+                while (overrun > 0 && idx-- > 0) {
+                    final int reduction = (overrun - rangeByIdx[idx][1]) >= 0 ? (overrun - rangeByIdx[idx][1]) : overrun;
+                    final TableColumn widestColumn = tcm.getColumn(rangeByIdx[idx][0]);
+                    widestColumn.setPreferredWidth(widestColumn.getWidth() - reduction);
+                    widestColumn.setWidth(widestColumn.getPreferredWidth());
+                    overrun -= reduction;
+                }
+                lastColumn.setPreferredWidth(lastColumn.getMinWidth());
+            } else {
+                lastColumn.setPreferredWidth(lastColumnBestWidth);
+            }
+            lastColumn.setWidth(lastColumn.getPreferredWidth());
         } else {
             super.doLayout();
         }
@@ -193,6 +241,18 @@ public class AveTable extends JTable {
                 this.getModel().addRow(newRow);
             }
         }
+        calculateStringColumnsBestWidth(column);
+    }
+
+    /**
+     * Get the width of the widest string in a column.
+     *
+     * @param columnIdx The index of the column.
+     * @return The width in pixel of the widest string displayed in given
+     * column.
+     */
+    public int getStringColumnsBestWidth(int columnIdx) {
+        return stringColumnsBestWidth[columnIdx];
     }
 
     /**
@@ -225,7 +285,7 @@ public class AveTable extends JTable {
     }
 
     /**
-     * Returns the number of pixels to be added below table's last row.
+     * Returns the number of pixels to be added below table's lastColumn row.
      *
      * @return number of pixels.
      */
@@ -234,8 +294,8 @@ public class AveTable extends JTable {
     }
 
     /**
-     * Specifies an addition number of pixels to be added below table's last
-     * row.
+     * Specifies an addition number of pixels to be added below table's
+     * lastColumn row.
      *
      * @param viewportHeightMargin margin in pixel.
      */
@@ -290,8 +350,8 @@ public class AveTable extends JTable {
     }
 
     /**
-     * Returns optionally added or reduced width for last column, e.g.to gain
-     * space for vertical ScrollBar.
+     * Returns optionally added or reduced width for lastColumn tableColumn,
+     * e.g.to gain space for vertical ScrollBar.
      *
      * @return the value for lastColumnExtraWidth.
      */
@@ -303,8 +363,8 @@ public class AveTable extends JTable {
      * Optionally add or reduce extra width for last column, e.g. to gain space
      * for vertical ScrollBar.
      *
-     * @param lastColumnExtraWidth the width added or substracted to last column
-     * width.
+     * @param lastColumnExtraWidth the width added or substracted to lastColumn
+     * tableColumn width.
      */
     public void setLastColumnExtraWidth(int lastColumnExtraWidth) {
         this.lastColumnExtraWidth = lastColumnExtraWidth;
@@ -321,7 +381,7 @@ public class AveTable extends JTable {
             this.table = table;
             this.renderer = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
 
-            // Have the header label be in the center of column.
+            // Have the header label be in the center of tableColumn.
             renderer.setHorizontalAlignment(JLabel.CENTER);
 
             this.columnPadding = columnPadding;
@@ -339,10 +399,6 @@ public class AveTable extends JTable {
             // Set minimum width from component preferred size.
             int minColumnWidth = component.getPreferredSize().width + (2 * this.columnPadding);
 
-            if (this.table.getLastColumnExtraWidth() > 0 && column == (columnModel.getColumnCount() - 1)) {
-                minColumnWidth += this.table.getLastColumnExtraWidth();
-            }
-
             // Make sure that the width of all columns is at least as wide as the totalMinimumWidth,
             // which might have been set externally (e.g. because add- and remove buttons need more space).
             if (columnModel.getTotalColumnWidth() < this.totalMinimumWidth
@@ -350,9 +406,7 @@ public class AveTable extends JTable {
                 minColumnWidth = tableColumn.getWidth() + this.totalMinimumWidth - columnModel.getTotalColumnWidth();
             }
 
-            if (tableColumn.getWidth() < minColumnWidth) {
-                tableColumn.setMinWidth(minColumnWidth);
-            }
+            tableColumn.setMinWidth(minColumnWidth);
 
             return component;
         }
@@ -370,9 +424,9 @@ public class AveTable extends JTable {
      */
     private class TableHeaderMouseListener extends MouseAdapter {
 
-        private final JTable table;
+        private final AveTable table;
 
-        public TableHeaderMouseListener(final JTable table) {
+        public TableHeaderMouseListener(final AveTable table) {
             this.table = table;
         }
 
@@ -384,14 +438,19 @@ public class AveTable extends JTable {
                 if (columnIndex < 0) {
                     return;
                 }
-                final TableColumn column = this.table.getColumnModel().getColumn(columnIndex);
-                if (column == null) {
+
+                final TableColumn tableColumn = this.table.getColumnModel().getColumn(columnIndex);
+                if (tableColumn == null) {
                     return;
                 }
-                // reset column identifier to default value.
-                column.setIdentifier(column.getHeaderValue());
-                this.table.revalidate();
-                this.table.repaint();
+                // Set columns preferred width back to the with before manual resizing and
+                // reset tableColumn identifier to default value.
+                if (tableColumn.getIdentifier().equals("ColumnIsManuallyResized")) {
+                    tableColumn.setIdentifier(tableColumn.getHeaderValue());
+                    tableColumn.setPreferredWidth(this.table.getStringColumnsBestWidth(columnIndex));
+                    this.table.revalidate();
+                    this.table.repaint();
+                }
             }
         }
     }
