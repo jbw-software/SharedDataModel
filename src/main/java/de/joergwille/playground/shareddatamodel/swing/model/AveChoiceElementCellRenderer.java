@@ -56,8 +56,7 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
         final TableColumn resizingColumn = table.getTableHeader().getResizingColumn();
         int prefColumnWidth = super.getPreferredSize().width;
         // Check if column is manually being resized but still wider than minWidth.
-        if (resizingColumn != null && tableColumn.equals(resizingColumn)
-                && tableColumn.getWidth() >= tableColumn.getMinWidth()) {
+        if (resizingColumn != null && tableColumn.equals(resizingColumn)) {
             prefColumnWidth = tableColumn.getWidth();
             tableColumn.setIdentifier("ColumnIsManuallyResized");
         }
