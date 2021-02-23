@@ -60,6 +60,7 @@ public class BestWidthStringCellRenderer extends DefaultTableCellRenderer {
             // Automatically resize column.
             int prefColumnWidth = aveTable.getStringColumnsBestWidth(column) > 0 ? aveTable.getStringColumnsBestWidth(column) : super.getPreferredSize().width;
 
+            // Optinionally add extra with, e.g.to gain space for vertical ScrollBar to last column. 
             if (column == (table.getColumnModel().getColumnCount() - 1)) {
                 prefColumnWidth += aveTable.getLastColumnExtraWidth();
             }
