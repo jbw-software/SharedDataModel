@@ -64,7 +64,7 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
         if (updatableSelection.isSelectionUpdated()) {
             tableColumn.setIdentifier(tableColumn.getHeaderValue());
         }
-        // Automitcally resize column.
+        // Automatically resize column.
         if (tableColumn.getPreferredWidth() != prefColumnWidth
                 && !"ColumnIsManuallyResized".equals(tableColumn.getIdentifier())) {
             tableColumn.setPreferredWidth(prefColumnWidth);
