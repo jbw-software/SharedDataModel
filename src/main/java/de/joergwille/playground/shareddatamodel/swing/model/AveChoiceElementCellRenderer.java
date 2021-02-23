@@ -48,16 +48,15 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
 
         // get PrototypeDisplayValue from AveUpdatableSelection and use it to update column width.
         this.setPrototypeDisplayValue((String) updatableSelection.getPrototypeDisplayValue());
-        
+
         // Automatically resize column width or use manually size.
         // If once manual resized then do not automatically layout
         // until updatableSelection was upated.
         final TableColumn tableColumn = table.getColumnModel().getColumn(column);
         final TableColumn resizingColumn = table.getTableHeader().getResizingColumn();
-        int prefColumnWidth = super.getPreferredSize().width;
-        // Check if column is manually being resized but still wider than minWidth.
+        int prefColumnWidth = Math.max(tableColumn.getMinWidth(), super.getPreferredSize().width);
+        // Check if column is manually being resized.
         if (resizingColumn != null && tableColumn.equals(resizingColumn)) {
-            prefColumnWidth = tableColumn.getWidth();
             tableColumn.setIdentifier("ColumnIsManuallyResized");
         }
         // Check if updatableSelection has been updated.
@@ -65,12 +64,11 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
             tableColumn.setIdentifier(tableColumn.getHeaderValue());
         }
         // Automatically resize column.
-        if (tableColumn.getPreferredWidth() != prefColumnWidth
-                && !"ColumnIsManuallyResized".equals(tableColumn.getIdentifier())) {
+        if (!"ColumnIsManuallyResized".equals(tableColumn.getIdentifier())) {
             tableColumn.setPreferredWidth(prefColumnWidth);
             tableColumn.setWidth(tableColumn.getPreferredWidth());
         }
-        
+
         this.setSelectedItem(updatableSelection.getSelectedItem());
 
         this.setForeground((isSelected) ? table.getSelectionForeground() : table.getForeground());

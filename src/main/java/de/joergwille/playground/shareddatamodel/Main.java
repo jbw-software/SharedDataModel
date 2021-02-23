@@ -16,6 +16,7 @@ public final class Main {
             for (LookAndFeelInfo lafInfo : UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(lafInfo.getName())) {
                     UIManager.setLookAndFeel(lafInfo.getClassName());
+                    UIManager.getLookAndFeelDefaults().put("Table.alternateRowColor", null);
                     break;
                 }
             }

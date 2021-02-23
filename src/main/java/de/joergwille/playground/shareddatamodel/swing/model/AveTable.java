@@ -397,17 +397,19 @@ public class AveTable extends JTable {
             final TableColumn tableColumn = columnModel.getColumn(column);
 
             // Set minimum width from component preferred size.
-            int minColumnWidth = component.getPreferredSize().width + (2 * this.columnPadding);
+            final Dimension componentPrefSize = component.getPreferredSize();
+            int columnMinWidth = componentPrefSize.width + (2 * this.columnPadding);
 
             // Make sure that the width of all columns is at least as wide as the totalMinimumWidth,
             // which might have been set externally (e.g. because add- and remove buttons need more space).
             if (columnModel.getTotalColumnWidth() < this.totalMinimumWidth
                     && column == (columnModel.getColumnCount() - 1)) {
-                minColumnWidth = tableColumn.getWidth() + this.totalMinimumWidth - columnModel.getTotalColumnWidth();
+                final int columnNewWidth = tableColumn.getWidth() + this.totalMinimumWidth - columnModel.getTotalColumnWidth();
+                componentPrefSize.width += columnNewWidth - columnMinWidth;
+                component.setPreferredSize(componentPrefSize);
             }
 
-            tableColumn.setMinWidth(minColumnWidth);
-
+            tableColumn.setMinWidth(columnMinWidth);
             return component;
         }
 

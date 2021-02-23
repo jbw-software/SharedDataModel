@@ -289,10 +289,10 @@ public abstract class AveTablePanel extends JPanel {
         // Create empty table (rows are added dynamically).
         this.tableModel = new AveTableModel(columnHeaders);
         // Table initialisation and configuration
-        this.table
-                = new AveTable(this.tableModel, minHeightInRows, DEFAULT_COLUMN_HEADER_PADDING, DEFAULT_VIEWPORT_HEIGHT_MARGIN);
-        table.setRowHeight(DEFAULT_ROW_HEIGHT);
-        table.setAutoResizeMode(LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(this.layoutMode));
+        this.table = new AveTable(this.tableModel, minHeightInRows, DEFAULT_COLUMN_HEADER_PADDING, DEFAULT_VIEWPORT_HEIGHT_MARGIN);
+        this.table.setRowHeight(DEFAULT_ROW_HEIGHT);
+        this.table.setAutoResizeMode(LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(this.layoutMode));
+
         this.focusListener = new ClearSelectionFocusAdapter(table);
 
         // Automatically create initNbrOfRows but at least minNbrOfRows rows.
