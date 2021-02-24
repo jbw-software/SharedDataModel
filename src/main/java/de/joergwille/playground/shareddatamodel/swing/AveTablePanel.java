@@ -8,7 +8,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.FocusAdapter;
@@ -267,8 +266,8 @@ public abstract class AveTablePanel extends JPanel {
     public AveTablePanel(final String[] columnHeaders, final String[] columnTypes,
             final AveSharedDataModel<String>[] choiceModels, final String[] columnDefaults, final LayoutMode layoutMode,
             int initNbrOfRows, int minNbrOfRows, int minHeightInRows) {
-        // Use absolute positioning or GridLayout for LAST_COLUMN_FILL_WIDTH layout.
-        super(LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(layoutMode) ? new GridLayout(1, 0) : null);
+        // Use absolute positioning or BorderLayout for LAST_COLUMN_FILL_WIDTH layout.
+        super(LayoutMode.LAST_COLUMN_FILL_WIDTH.equals(layoutMode) ? new BorderLayout() : null);
 
         this.columnTypes = columnTypes;
         this.choiceModels = choiceModels;
@@ -341,10 +340,6 @@ public abstract class AveTablePanel extends JPanel {
         // TablePanel configuration.
         this.tablePanel.setOpaque(true);
 
-        // ScrollPane configuration.
-        this.scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        this.tablePanel.add(this.scrollPane, BorderLayout.CENTER);
-
         // Add- and remove button initialisation and configuration.
         if (!LayoutMode.VECTOR.equals(this.layoutMode)) {
             this.addRowButton.addActionListener(a -> {
@@ -372,6 +367,10 @@ public abstract class AveTablePanel extends JPanel {
         } else {
             this.scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         }
+        
+        // ScrollPane configuration.
+        this.scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        this.tablePanel.add(this.scrollPane, BorderLayout.CENTER);
 
         super.add(tablePanel);
 
