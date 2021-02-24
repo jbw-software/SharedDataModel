@@ -41,6 +41,7 @@ public class AveTable extends JTable {
     private AveTableRowEntry rowPrototype;
     private int lastColumnExtraWidth;
     private int[] stringColumnsBestWidth;
+    private int minimumViewportWidth;
 
     public AveTable(final TableModel tableModel) {
         this(tableModel, Math.max(DEFAULT_VISIBLE_ROW_COUNT, tableModel.getRowCount()));
@@ -70,8 +71,9 @@ public class AveTable extends JTable {
 
         this.stringColumnsBestWidth = new int[tableModel.getColumnCount()];
 
-        // JTable uses some default values for PreferredScrollableViewportSize. Do not use these.
+        // JTable uses default Dimension(450, 400) for PreferredScrollableViewportSize. Do not use these.
         super.setPreferredScrollableViewportSize(null);
+        this.minimumViewportWidth = 100;
 
         // Table will not fill ScrollPane's ViewPort width. See table.getScrollableTracksViewportWidth().
         this.setAutoResizeMode(false);
@@ -112,7 +114,8 @@ public class AveTable extends JTable {
             for (int rowIdx = 0; rowIdx < super.getRowCount(); rowIdx++) {
                 final String string = (String) super.getModel().getValueAt(rowIdx, columnIdx);
                 final JLabel label = (JLabel) this.getCellRenderer(rowIdx, columnIdx).getTableCellRendererComponent(this, string, false, false, rowIdx, columnIdx);
-                stringColumnWidth = Math.max(stringColumnWidth, label.getPreferredSize().width);
+                final int prefColumnWidth = label.getPreferredSize().width + label.getInsets().left + label.getInsets().right;
+                stringColumnWidth = Math.max(stringColumnWidth, prefColumnWidth);
             }
             this.stringColumnsBestWidth[columnIdx] = stringColumnWidth;
         } else {
@@ -152,8 +155,7 @@ public class AveTable extends JTable {
             return super.getPreferredScrollableViewportSize();
         }
 
-        final Dimension currentPrefSize = super.getPreferredSize();
-        currentPrefSize.height = this.getVisibleRowCount() * super.getRowHeight();
+        final Dimension currentPrefSize = new Dimension(this.minimumViewportWidth, this.getVisibleRowCount() * super.getRowHeight());
         return currentPrefSize;
     }
 
@@ -178,7 +180,7 @@ public class AveTable extends JTable {
         // http://stackoverflow.com/questions/16368343/jtable-resize-only-selected-tableColumn-when-container-size-changes
         if (this.autoResizeMode && super.tableHeader.getResizingColumn() == null) {
             final TableColumnModel tcm = super.getColumnModel();
-            final int delta = getParent().getWidth() - tcm.getTotalColumnWidth();
+            final int delta = super.getParent().getWidth() - tcm.getTotalColumnWidth();
             final TableColumn lastColumn = tcm.getColumn(tcm.getColumnCount() - 1);
             final int lastColumnBestWidth = lastColumn.getPreferredWidth() + delta;
             // Check if lastColumn is still wider than minWidth and
@@ -346,6 +348,7 @@ public class AveTable extends JTable {
      * width of all columns.
      */
     public void setMinimumWidth(int minimumWidth) {
+        this.minimumViewportWidth = minimumWidth;
         this.minWidthHeaderRenderer.setTotalMinimumWidth(minimumWidth);
     }
 
