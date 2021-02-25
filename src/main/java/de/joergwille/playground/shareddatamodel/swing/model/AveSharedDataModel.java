@@ -68,7 +68,8 @@ public class AveSharedDataModel<E> extends AbstractUniqueIterableDataModel<E>
         final List<E> currentItems = super.toList();
 
         // check if updated list is different from original list or no listeners are registered.
-        if (this.updateListeners.isEmpty() || (newItems.size() == currentItems.size() && newItems.containsAll(currentItems) && currentItems.containsAll(newItems))) {
+//        if (this.updateListeners.isEmpty() || (newItems.size() == currentItems.size() && newItems.containsAll(currentItems) && currentItems.containsAll(newItems))) {
+        if (this.updateListeners.isEmpty() || (newItems.equals(currentItems))) {
             return false;
         }
         if (newItems.isEmpty()) {

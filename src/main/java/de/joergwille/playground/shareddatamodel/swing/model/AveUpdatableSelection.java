@@ -70,18 +70,40 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
             this.sharedModel.fireContentsChanged(this, -1, -1);
         }
     }
-
-    private boolean onlySelectedItemIsRenamed(List<E> newItems, List<E> currentItems, int selectedObjIndex) {
-        // In a "rename case" the size does not change
-        if (newItems.size() != currentItems.size()) {
+    
+    private boolean crossedRenamingWithSelectedItem(List<E> newItems, List<E> currentItems, int newSelectedIndex, int currentSelectedIndex) {
+        // Define that for cross renaming the list must be of equal lenght, have equal items and only the order differs.
+        if (newItems.size() != currentItems.size() || !newItems.containsAll(currentItems) || !currentItems.containsAll(newItems)) {
             return false;
         }
+        if (!newItems.get(currentSelectedIndex).equals(currentItems.get(newSelectedIndex))
+                || !newItems.get(newSelectedIndex).equals(currentItems.get(currentSelectedIndex))) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean onlySelectedItemIsRenamed(List<E> newItems, List<E> currentItems, int currentSelectedIndex) {
+        // In a "rename case" the size does not change, except for the special case that the new list has exactly 1 additional item... 
+        if (newItems.size() != currentItems.size() && newItems.size() - 1 != currentItems.size()) {
+            return false;
+        }
+        // and this item has the same name as the selected item in the current list.
+        // (This fullfills the use case that a new item was added and the original item renamed.)
+        else if (newItems.size() - 1 == currentItems.size()) {
+            final E addedItem = newItems.get(newItems.size() - 1);
+            final E lastSelectedItem = currentItems.get(currentSelectedIndex);
+            if (!addedItem.equals(lastSelectedItem)) {
+                return false;
+            }
+        }
+        
         // Renaming only makes sense for E == String
         if (newItems.get(0) instanceof String == false) {
             return false;
         }
-        for (int i = 0; i < newItems.size(); i++) {
-            if (!newItems.get(i).equals(currentItems.get(i)) && i != selectedObjIndex) {
+        for (int i = 0; i < currentItems.size(); i++) {
+            if (!newItems.get(i).equals(currentItems.get(i)) && i != currentSelectedIndex) {
                 return false;
             }
         }
@@ -96,18 +118,27 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
             this.setPrototypeDisplayValue(prototypeDisplayValue);
             this.selectionUpdated = true;
 
-            int indexInCurrentItems = currentItems.indexOf(this.selectedItem);
-            int indexInNewItems = newItems.indexOf(this.selectedItem);
+            // Update selection.
+            Object newSelection = null;
+            // Check if current selected item still exists and has the same index in new list and if so return without changing selection.
+            final int indexInCurrentItems = currentItems.indexOf(this.selectedItem);
+            final int indexInNewItems = newItems.indexOf(this.selectedItem);
             if (indexInCurrentItems == indexInNewItems) {
                 return;
             }
-            Object newSelection = null;
+            // Check if in the new list there exists an item with the same name as the current selected item and if so mark this item with that name for selection. 
             if (this.matchSelectionByString && indexInNewItems >= 0) {
                 newSelection = newItems.get(indexInNewItems);
             }
+            // Check if only the selected item changed.
             if (this.onlySelectedItemIsRenamed(newItems, currentItems, indexInCurrentItems)) {
                 newSelection = newItems.get(indexInCurrentItems);
             }
+            
+            if (this.crossedRenamingWithSelectedItem(newItems, currentItems, indexInNewItems, indexInCurrentItems)) {
+                newSelection = newItems.get(indexInCurrentItems);
+            }
+            
             this.setSelectedItem(newSelection);
         }
     }
