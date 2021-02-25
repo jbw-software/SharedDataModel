@@ -69,7 +69,9 @@ public class AveTable extends JTable {
         // Initially empty. Value gets set in setLastColumnExtraWidth() to add extra width for lastColumn tableColumn, e.g. to gain space for vertical ScrollBar.
         this.lastColumnExtraWidth = 0;
 
+        // Instantiate and initialize an array to store the widest string width for String columns, similar to ChoiceElement columns whic use PrototypeDisplayValue.
         this.stringColumnsBestWidth = new int[tableModel.getColumnCount()];
+        Arrays.fill(this.stringColumnsBestWidth, -1);
 
         // JTable uses default Dimension(450, 400) for PreferredScrollableViewportSize. Do not use these.
         super.setPreferredScrollableViewportSize(null);
@@ -108,19 +110,18 @@ public class AveTable extends JTable {
     }
 
     // Calculate the number of pixels for the widest string in a column.
-    private void calculateStringColumnsBestWidth(int columnIdx) {
+    private int calculateStringColumnsBestWidth(int columnIdx) {
+        int stringColumnWidth = 0;
         if (super.getColumnClass(columnIdx).equals(String.class)) {
-            int stringColumnWidth = 0;
             for (int rowIdx = 0; rowIdx < super.getRowCount(); rowIdx++) {
                 final String string = (String) super.getModel().getValueAt(rowIdx, columnIdx);
                 final JLabel label = (JLabel) this.getCellRenderer(rowIdx, columnIdx).getTableCellRendererComponent(this, string, false, false, rowIdx, columnIdx);
                 final int prefColumnWidth = label.getPreferredSize().width + label.getInsets().left + label.getInsets().right;
                 stringColumnWidth = Math.max(stringColumnWidth, prefColumnWidth);
             }
-            this.stringColumnsBestWidth[columnIdx] = stringColumnWidth;
-        } else {
-            this.stringColumnsBestWidth[columnIdx] = 0;
         }
+        this.stringColumnsBestWidth[columnIdx] = stringColumnWidth;
+        return stringColumnWidth;
     }
 
     /**
@@ -243,18 +244,24 @@ public class AveTable extends JTable {
                 this.getModel().addRow(newRow);
             }
         }
-        calculateStringColumnsBestWidth(column);
+        this.calculateStringColumnsBestWidth(column);
     }
 
     /**
      * Get the width of the widest string in a column.
      *
      * @param columnIdx The index of the column.
+     * @param preferredWidth A value which will be returned, if column has not been edited before.
      * @return The width in pixel of the widest string displayed in given
      * column.
      */
-    public int getStringColumnsBestWidth(int columnIdx) {
-        return stringColumnsBestWidth[columnIdx];
+    public int getStringColumnsBestWidth(final int columnIdx, final int preferredWidth) {
+        final int value = this.stringColumnsBestWidth[columnIdx];
+        // If stringColumnsBestWidth has not been set (e.g. column has not been edited) return preferredWidth.
+        if (value < 0) {
+            return preferredWidth;
+        }
+        return value;
     }
 
     /**
@@ -439,12 +446,12 @@ public class AveTable extends JTable {
         public void mouseClicked(MouseEvent event) {
 
             if (SwingUtilities.isLeftMouseButton(event) && event.getClickCount() == 2) {
-                int columnIndex = this.table.columnAtPoint(event.getPoint());
-                if (columnIndex < 0) {
+                int columnIdx = this.table.columnAtPoint(event.getPoint());
+                if (columnIdx < 0) {
                     return;
                 }
 
-                final TableColumn tableColumn = this.table.getColumnModel().getColumn(columnIndex);
+                final TableColumn tableColumn = this.table.getColumnModel().getColumn(columnIdx);
                 if (tableColumn == null) {
                     return;
                 }
@@ -452,7 +459,7 @@ public class AveTable extends JTable {
                 // reset tableColumn identifier to default value.
                 if (tableColumn.getIdentifier().equals("ColumnIsManuallyResized")) {
                     tableColumn.setIdentifier(tableColumn.getHeaderValue());
-                    tableColumn.setPreferredWidth(this.table.getStringColumnsBestWidth(columnIndex));
+                    tableColumn.setPreferredWidth(this.table.getStringColumnsBestWidth(columnIdx, tableColumn.getPreferredWidth()));
                     this.table.revalidate();
                     this.table.repaint();
                 }
