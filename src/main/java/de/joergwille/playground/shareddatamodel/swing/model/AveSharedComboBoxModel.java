@@ -61,8 +61,15 @@ public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
         this.forceDeselectionOnIndexChange = forceDeselectionOnIndexChange;
         this.listenerList = new EventListenerList();
         this.setPrototypeDisplayValue(sharedModel.getPrototypeDisplayValue());
-     }
+    }
 
+    /**
+     * Implements the rule to allow one mutation of the items.
+     * 
+     * @param newItems The potentially changed list of items.
+     * @param currentItems The original list of items.
+     * @return Returns <i>true</i> if newItems only differs by 1 item.
+     */
     private boolean isOnlyOneMutation(List<E> newItems, List<E> currentItems) {
         // If the size has changed, it cannot be a one item mutatation.
         if (newItems.size() != currentItems.size()) {
@@ -128,18 +135,18 @@ public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
     public void setForceDeselectionOnIndexChange(boolean forceDeselectionOnIndexChange) {
         this.forceDeselectionOnIndexChange = forceDeselectionOnIndexChange;
     }
-    
+
     public JComboBox<E> getAssociatedComboBox() {
         return associatedComboBox;
     }
 
     public void setAssociatedComboBox(JComboBox<E> associatedComboBox) {
         this.associatedComboBox = associatedComboBox;
-        
+
         // update associatedComboBox with previously set prototypeDisplayValue.
         this.setPrototypeDisplayValue(super.getPrototypeDisplayValue());
     }
-    
+
     @Override
     public void setPrototypeDisplayValue(E prototypeDisplayValue) {
         super.setPrototypeDisplayValue(prototypeDisplayValue);
@@ -257,7 +264,7 @@ public class AveSharedComboBoxModel<E> extends AveUpdatableSelection<E>
 
         } else { // UpdateListener.State.AFTER_UPDATE
             this.setPrototypeDisplayValue(prototypeDisplayValue);
-            
+
             if (selectedIndexBackup >= 0 && selectedIndexBackup < this.getSize()) {
                 setSelectedItem(newItems.get(selectedIndexBackup));
             } else {

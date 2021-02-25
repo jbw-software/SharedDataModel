@@ -96,16 +96,16 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
             this.setPrototypeDisplayValue(prototypeDisplayValue);
             this.selectionUpdated = true;
 
-            Object newSelection = null;
             int indexInCurrentItems = currentItems.indexOf(this.selectedItem);
             int indexInNewItems = newItems.indexOf(this.selectedItem);
             if (indexInCurrentItems == indexInNewItems) {
                 return;
             }
-            if (matchSelectionByString && indexInNewItems >= 0) {
+            Object newSelection = null;
+            if (this.matchSelectionByString && indexInNewItems >= 0) {
                 newSelection = newItems.get(indexInNewItems);
             }
-            if (onlySelectedItemIsRenamed(newItems, currentItems, indexInCurrentItems)) {
+            if (this.onlySelectedItemIsRenamed(newItems, currentItems, indexInCurrentItems)) {
                 newSelection = newItems.get(indexInCurrentItems);
             }
             this.setSelectedItem(newSelection);
