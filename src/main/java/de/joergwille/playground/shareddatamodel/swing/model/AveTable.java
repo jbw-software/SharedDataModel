@@ -115,9 +115,15 @@ public class AveTable extends JTable {
         if (super.getColumnClass(columnIdx).equals(String.class)) {
             for (int rowIdx = 0; rowIdx < super.getRowCount(); rowIdx++) {
                 final String string = (String) super.getModel().getValueAt(rowIdx, columnIdx);
-                final JLabel label = (JLabel) this.getCellRenderer(rowIdx, columnIdx).getTableCellRendererComponent(this, string, false, false, rowIdx, columnIdx);
-                final int prefColumnWidth = label.getPreferredSize().width + label.getInsets().left + label.getInsets().right;
-                stringColumnWidth = Math.max(stringColumnWidth, prefColumnWidth);
+                final Component rendererComponent =
+                        this.getCellRenderer(rowIdx, columnIdx)
+                                .getTableCellRendererComponent(this, string, false, false, rowIdx, columnIdx);
+                if (rendererComponent instanceof JLabel) {
+                    final JLabel label = (JLabel) rendererComponent;
+                    final int prefColumnWidth = label.getPreferredSize().width +
+                            label.getInsets().left + label.getInsets().right;
+                    stringColumnWidth = Math.max(stringColumnWidth, prefColumnWidth);
+                }
             }
         }
         this.stringColumnsBestWidth[columnIdx] = stringColumnWidth;
@@ -156,7 +162,8 @@ public class AveTable extends JTable {
             return super.getPreferredScrollableViewportSize();
         }
 
-        final Dimension currentPrefSize = new Dimension(this.minimumViewportWidth, this.getVisibleRowCount() * super.getRowHeight());
+        final Dimension currentPrefSize =
+                new Dimension(this.minimumViewportWidth, this.getVisibleRowCount() * super.getRowHeight());
         return currentPrefSize;
     }
 
@@ -238,9 +245,12 @@ public class AveTable extends JTable {
         final int row = getEditingRow();
         final int column = getEditingColumn();
         super.editingStopped(e); // Must call the super code to have a working edition.
+        // If setAutoCreateNewRowAfterLastEdit is being set, rowPrototype is not null.
         if (this.rowPrototype != null) {
             final AveTableRowEntry newRow = new AveTableRowEntry(this.rowPrototype);
-            if (row == getRowCount() - 1 && column == getColumnCount() - 1) {
+            final String cellValue = this.getModel().getStringValueAt(row, column) == null ? "" :
+                     this.getModel().getStringValueAt(row, column);
+            if (row == getRowCount() - 1 && column == getColumnCount() - 1 && !cellValue.isEmpty()) {
                 this.getModel().addRow(newRow);
             }
         }
@@ -401,8 +411,8 @@ public class AveTable extends JTable {
         public Component getTableCellRendererComponent(
                 JTable table, Object value, boolean isSelected,
                 boolean hasFocus, int row, int column) {
-            final Component component
-                    = renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            final Component component =
+                    renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             final TableColumnModel columnModel = table.getColumnModel();
             final TableColumn tableColumn = columnModel.getColumn(column);
 
@@ -412,9 +422,10 @@ public class AveTable extends JTable {
 
             // Make sure that the width of all columns is at least as wide as the totalMinimumWidth,
             // which might have been set externally (e.g. because add- and remove buttons need more space).
-            if (columnModel.getTotalColumnWidth() < this.totalMinimumWidth
-                    && column == (columnModel.getColumnCount() - 1)) {
-                final int columnNewWidth = tableColumn.getWidth() + this.totalMinimumWidth - columnModel.getTotalColumnWidth();
+            if (columnModel.getTotalColumnWidth() < this.totalMinimumWidth &&
+                    column == (columnModel.getColumnCount() - 1)) {
+                final int columnNewWidth =
+                        tableColumn.getWidth() + this.totalMinimumWidth - columnModel.getTotalColumnWidth();
                 componentPrefSize.width += columnNewWidth - columnMinWidth;
                 component.setPreferredSize(componentPrefSize);
             }

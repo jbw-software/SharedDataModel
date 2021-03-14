@@ -17,7 +17,7 @@ import javax.swing.table.TableColumn;
  * @author willejoerg
  */
 @SuppressWarnings("serial")
-public class AveChoiceElementCellRenderer extends JComboBox<String> implements TableCellRenderer {
+public final class AveChoiceElementCellRenderer extends JComboBox<String> implements TableCellRenderer {
 
     private static final class InstanceHolder {
 
@@ -26,6 +26,7 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
 
     private AveChoiceElementCellRenderer() {
         super();
+        super.setMaximumRowCount(30);
         setOpaque(true);
     }
 
@@ -44,7 +45,6 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
             boolean isSelected, boolean hasFocus, int row, int column) {
         AveUpdatableSelection updatableSelection = (AveUpdatableSelection) value;
         super.setModel(new DefaultComboBoxModel(updatableSelection.toArray()));
-        super.setMaximumRowCount(Math.min(30, updatableSelection.sharedModel.size()));
 
         // get PrototypeDisplayValue from AveUpdatableSelection and use it to update column width.
         this.setPrototypeDisplayValue((String) updatableSelection.getPrototypeDisplayValue());
@@ -71,8 +71,8 @@ public class AveChoiceElementCellRenderer extends JComboBox<String> implements T
 
         this.setSelectedItem(updatableSelection.getSelectedItem());
 
-        this.setForeground((isSelected) ? table.getSelectionForeground() : table.getForeground());
-        this.setBackground((isSelected) ? table.getSelectionBackground() : table.getBackground());
+        this.setForeground((isSelected && hasFocus) ? table.getSelectionForeground() : table.getForeground());
+        this.setBackground((isSelected && hasFocus) ? table.getSelectionBackground() : table.getBackground());
 
         return this;
     }

@@ -84,24 +84,28 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
     }
 
     private boolean onlySelectedItemIsRenamed(List<E> newItems, List<E> currentItems, int currentSelectedIndex) {
-        // In a "rename case" the size does not change, except for the special case that the new list has exactly 1 additional item... 
-        if (newItems.size() != currentItems.size() && newItems.size() - 1 != currentItems.size()) {
-            return false;
-        }
-        // and this item has the same name as the selected item in the current list.
-        // (This fullfills the use case that a new item was added and the original item renamed.)
-        else if (newItems.size() - 1 == currentItems.size()) {
-            final E addedItem = newItems.get(newItems.size() - 1);
-            final E lastSelectedItem = currentItems.get(currentSelectedIndex);
-            if (!addedItem.equals(lastSelectedItem)) {
-                return false;
-            }
-        }
-        
         // Renaming only makes sense for E == String
         if (newItems.get(0) instanceof String == false) {
             return false;
         }
+        // In a "rename case" the size does not change
+        if (newItems.size() != currentItems.size()) {
+            return false;
+        }
+        // In a "rename case" the size does not change, except for the special case that the new list has exactly 1 additional item... 
+//        if (newItems.size() != currentItems.size() && newItems.size() - 1 != currentItems.size()) {
+//            return false;
+//        }
+        // and this item has the same name as the selected item in the current list.
+        // (This fullfills the use case that a new item was added and the original item renamed.)
+//        else if (newItems.size() - 1 == currentItems.size()) {
+//            final E addedItem = newItems.get(newItems.size() - 1);
+//            final E lastSelectedItem = currentItems.get(currentSelectedIndex);
+//            if (!addedItem.equals(lastSelectedItem)) {
+//                return false;
+//            }
+//        }
+        
         for (int i = 0; i < currentItems.size(); i++) {
             if (!newItems.get(i).equals(currentItems.get(i)) && i != currentSelectedIndex) {
                 return false;
@@ -129,16 +133,16 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
             // Check if in the new list there exists an item with the same name as the current selected item and if so mark this item with that name for selection. 
             if (this.matchSelectionByString && indexInNewItems >= 0) {
                 newSelection = newItems.get(indexInNewItems);
-            }
+            } else
             // Check if only the selected item changed.
             if (this.onlySelectedItemIsRenamed(newItems, currentItems, indexInCurrentItems)) {
                 newSelection = newItems.get(indexInCurrentItems);
             }
-            
-            if (this.crossedRenamingWithSelectedItem(newItems, currentItems, indexInNewItems, indexInCurrentItems)) {
-                newSelection = newItems.get(indexInCurrentItems);
-            }
-            
+
+//            if (this.crossedRenamingWithSelectedItem(newItems, currentItems, indexInNewItems, indexInCurrentItems)) {
+//                newSelection = newItems.get(indexInCurrentItems);
+//            }
+
             this.setSelectedItem(newSelection);
         }
     }
@@ -244,6 +248,10 @@ public class AveUpdatableSelection<E> implements UpdateListener<E>, Serializable
      */
     public void setAllowEmptySelection(boolean allowEmptySelection) {
         this.allowEmptySelection = allowEmptySelection;
+        // if not allowEmptySelection but selection is null, try setting a non-null value (in method setSelected).
+        if (allowEmptySelection == false && this.selectedItem == null) {
+            this.setSelected(null);
+        }
     }
 
     /**

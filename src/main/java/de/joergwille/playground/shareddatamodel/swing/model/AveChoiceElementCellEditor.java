@@ -2,12 +2,14 @@ package de.joergwille.playground.shareddatamodel.swing.model;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 import javax.swing.AbstractCellEditor;
+import javax.swing.CellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.TableCellEditor;
 
 /**
@@ -20,7 +22,7 @@ import javax.swing.table.TableCellEditor;
  * @author willejoerg
  */
 @SuppressWarnings("serial")
-public class AveChoiceElementCellEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
+public final class AveChoiceElementCellEditor extends AbstractCellEditor implements TableCellEditor {
 
     private static final class InstanceHolder {
 
@@ -34,6 +36,9 @@ public class AveChoiceElementCellEditor extends AbstractCellEditor implements Ta
         super();
         this.comboBox = new JComboBox<>();
         this.comboBox.setOpaque(true);
+        this.comboBox.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE);
+        this.comboBox.addActionListener(this::comboBoxActionPerformed);
+        this.comboBox.addPopupMenuListener(new PopupMenuCanceledListener(this));
     }
 
     /**
@@ -43,6 +48,12 @@ public class AveChoiceElementCellEditor extends AbstractCellEditor implements Ta
      */
     public static AveChoiceElementCellEditor getInstance() {
         return InstanceHolder.INSTANCE;
+    }
+
+    private void comboBoxActionPerformed(ActionEvent event) {
+        JComboBox<?> aComboBox = (JComboBox) event.getSource();
+        this.updatableSelection.setSelectedItem(aComboBox.getSelectedItem());
+        super.stopCellEditing();
     }
 
     @Override
@@ -66,21 +77,36 @@ public class AveChoiceElementCellEditor extends AbstractCellEditor implements Ta
         if (!(value instanceof AveUpdatableSelection)) {
             return this.comboBox;
         }
-        
+
         this.updatableSelection = (AveUpdatableSelection) value;
         this.comboBox.setModel(new AveSharedComboBoxModel<>(this.updatableSelection.sharedModel));
         this.comboBox.setPrototypeDisplayValue(this.updatableSelection.getPrototypeDisplayValue());
         this.comboBox.setSelectedItem(this.updatableSelection.getSelectedItem());
-        this.comboBox.addActionListener(this);
-       
+
         return this.comboBox;
     }
 
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        JComboBox<?> aComboBox = (JComboBox) event.getSource();
-        this.updatableSelection.setSelectedItem(aComboBox.getSelectedItem());
-        super.stopCellEditing();
-    }
+    private final class PopupMenuCanceledListener implements PopupMenuListener {
 
+        final CellEditor cellEditor;
+
+        public PopupMenuCanceledListener(final CellEditor cellEditor) {
+            this.cellEditor = cellEditor;
+        }
+
+        @Override
+        public void popupMenuWillBecomeVisible(final PopupMenuEvent e) {
+            // Do nothing
+        }
+
+        @Override
+        public void popupMenuWillBecomeInvisible(final PopupMenuEvent e) {
+            // Do nothing
+        }
+
+        @Override
+        public void popupMenuCanceled(final PopupMenuEvent e) {
+            this.cellEditor.cancelCellEditing();
+        }
+    }
 }

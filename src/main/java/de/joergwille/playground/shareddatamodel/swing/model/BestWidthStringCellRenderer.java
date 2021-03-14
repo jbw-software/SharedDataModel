@@ -7,8 +7,8 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 /**
- * AveChoiceElementCellRenderer A {@link TableCellRenderer} for
- * {@link AveUpdatableSelection} data coloumns. {@link AveUpdatableSelection} is
+ * BestWidthStringCellRenderer A {@link TableCellRenderer} for
+ * {@link AveUpdatableSelection} data columns. {@link AveUpdatableSelection} is
  * used to store the selected item of a <code>JComboBox</code>.
  * <code>AveChoiceElementCellRenderer</code> uses a singleton pattern since a
  * single instance can be reused for multiple <code>JComboBox</code> instances.
@@ -61,7 +61,7 @@ public class BestWidthStringCellRenderer extends DefaultTableCellRenderer {
             int prefColumnWidth = super.getPreferredSize().width + super.getInsets().left + super.getInsets().right;
             prefColumnWidth = aveTable.getStringColumnsBestWidth(column, prefColumnWidth);
  
-            // Optinionally add extra with, e.g.to gain space for vertical ScrollBar to last column. 
+            // Optinionally add extra with, e.g. to gain space for vertical ScrollBar to last column. 
             if (column == (table.getColumnModel().getColumnCount() - 1)) {
                 prefColumnWidth += aveTable.getLastColumnExtraWidth();
             }
