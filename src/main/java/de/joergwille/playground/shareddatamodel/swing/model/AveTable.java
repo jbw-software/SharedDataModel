@@ -2,13 +2,16 @@ package de.joergwille.playground.shareddatamodel.swing.model;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Arrays;
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -56,8 +59,16 @@ public class AveTable extends JTable {
     }
 
     public AveTable(final TableModel tableModel, int visibleRowCount, int columnHeaderPadding, int viewportHeightMargin) {
+        this(tableModel, visibleRowCount, columnHeaderPadding, viewportHeightMargin, 0);
+    }
+    
+    public AveTable(final TableModel tableModel, int visibleRowCount, int columnHeaderPadding, int viewportHeightMargin, int separatorColumn) {
+        this(tableModel, visibleRowCount, columnHeaderPadding, viewportHeightMargin, separatorColumn, false);
+    }
+    
+    public AveTable(final TableModel tableModel, int visibleRowCount, int columnHeaderPadding, int viewportHeightMargin, int separatorColumn, boolean isPlainFont) {
         super(tableModel);
-        this.minWidthHeaderRenderer = new MinWidthHeaderRenderer(this, columnHeaderPadding);
+        this.minWidthHeaderRenderer = new MinWidthHeaderRenderer(this, columnHeaderPadding, separatorColumn, isPlainFont ? super.getFont().deriveFont(Font.PLAIN) : null);
         this.tableHeaderMouseListener = new TableHeaderMouseListener(this);
 
         this.visibleRowCount = visibleRowCount >= 0 ? visibleRowCount : tableModel.getRowCount();
@@ -115,13 +126,13 @@ public class AveTable extends JTable {
         if (super.getColumnClass(columnIdx).equals(String.class)) {
             for (int rowIdx = 0; rowIdx < super.getRowCount(); rowIdx++) {
                 final String string = (String) super.getModel().getValueAt(rowIdx, columnIdx);
-                final Component rendererComponent =
-                        this.getCellRenderer(rowIdx, columnIdx)
+                final Component rendererComponent
+                        = this.getCellRenderer(rowIdx, columnIdx)
                                 .getTableCellRendererComponent(this, string, false, false, rowIdx, columnIdx);
                 if (rendererComponent instanceof JLabel) {
                     final JLabel label = (JLabel) rendererComponent;
-                    final int prefColumnWidth = label.getPreferredSize().width +
-                            label.getInsets().left + label.getInsets().right;
+                    final int prefColumnWidth = label.getPreferredSize().width
+                            + label.getInsets().left + label.getInsets().right;
                     stringColumnWidth = Math.max(stringColumnWidth, prefColumnWidth);
                 }
             }
@@ -162,8 +173,8 @@ public class AveTable extends JTable {
             return super.getPreferredScrollableViewportSize();
         }
 
-        final Dimension currentPrefSize =
-                new Dimension(this.minimumViewportWidth, this.getVisibleRowCount() * super.getRowHeight());
+        final Dimension currentPrefSize
+                = new Dimension(this.minimumViewportWidth, this.getVisibleRowCount() * super.getRowHeight());
         return currentPrefSize;
     }
 
@@ -248,8 +259,8 @@ public class AveTable extends JTable {
         // If setAutoCreateNewRowAfterLastEdit is being set, rowPrototype is not null.
         if (this.rowPrototype != null) {
             final AveTableRowEntry newRow = new AveTableRowEntry(this.rowPrototype);
-            final String cellValue = this.getModel().getStringValueAt(row, column) == null ? "" :
-                     this.getModel().getStringValueAt(row, column);
+            final String cellValue = this.getModel().getStringValueAt(row, column) == null ? ""
+                    : this.getModel().getStringValueAt(row, column);
             if (row == getRowCount() - 1 && column == getColumnCount() - 1 && !cellValue.isEmpty()) {
                 this.getModel().addRow(newRow);
             }
@@ -261,7 +272,8 @@ public class AveTable extends JTable {
      * Get the width of the widest string in a column.
      *
      * @param columnIdx The index of the column.
-     * @param preferredWidth A value which will be returned, if column has not been edited before.
+     * @param preferredWidth A value which will be returned, if column has not
+     * been edited before.
      * @return The width in pixel of the widest string displayed in given
      * column.
      */
@@ -392,27 +404,28 @@ public class AveTable extends JTable {
 
     private static class MinWidthHeaderRenderer implements TableCellRenderer {
 
-        private final AveTable table;
         private final DefaultTableCellRenderer renderer;
         private final int columnPadding;
+        private final int separatorColumn;
+        private final Font font;
         private int totalMinimumWidth;
 
-        public MinWidthHeaderRenderer(final AveTable table, int columnPadding) {
-            this.table = table;
+        public MinWidthHeaderRenderer(final AveTable table, int columnPadding, int separatorColumn, final Font font) {
             this.renderer = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
-
+            this.columnPadding = columnPadding;
+            this.separatorColumn = separatorColumn;
+            this.font = font;
             // Have the header label be in the center of tableColumn.
             renderer.setHorizontalAlignment(JLabel.CENTER);
-
-            this.columnPadding = columnPadding;
+            renderer.setBackground(table.getTableHeader().getBackground());
         }
 
         @Override
         public Component getTableCellRendererComponent(
                 JTable table, Object value, boolean isSelected,
                 boolean hasFocus, int row, int column) {
-            final Component component =
-                    renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            final Component component
+                    = renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             final TableColumnModel columnModel = table.getColumnModel();
             final TableColumn tableColumn = columnModel.getColumn(column);
 
@@ -422,15 +435,28 @@ public class AveTable extends JTable {
 
             // Make sure that the width of all columns is at least as wide as the totalMinimumWidth,
             // which might have been set externally (e.g. because add- and remove buttons need more space).
-            if (columnModel.getTotalColumnWidth() < this.totalMinimumWidth &&
-                    column == (columnModel.getColumnCount() - 1)) {
-                final int columnNewWidth =
-                        tableColumn.getWidth() + this.totalMinimumWidth - columnModel.getTotalColumnWidth();
+            if (columnModel.getTotalColumnWidth() < this.totalMinimumWidth
+                    && column == (columnModel.getColumnCount() - 1)) {
+                final int columnNewWidth
+                        = tableColumn.getWidth() + this.totalMinimumWidth - columnModel.getTotalColumnWidth();
                 componentPrefSize.width += columnNewWidth - columnMinWidth;
                 component.setPreferredSize(componentPrefSize);
             }
 
             tableColumn.setMinWidth(columnMinWidth);
+
+            // Sets a separator between the specified column and the rest of the table.
+            if (column == this.separatorColumn) {
+                final Border separator = BorderFactory.createMatteBorder(0, 0, 1, 3, table.getGridColor());
+                ((JLabel) component).setBorder(separator);
+            } else {
+                ((JLabel) component).setBorder(null);
+            }
+
+            if (this.font != null) {
+                ((JLabel) component).setFont(font);
+            }
+
             return component;
         }
 

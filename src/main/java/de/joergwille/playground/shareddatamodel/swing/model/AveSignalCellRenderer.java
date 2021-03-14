@@ -20,6 +20,7 @@ import javax.swing.table.TableCellRenderer;
  *
  * @author willejoerg
  */
+@SuppressWarnings("serial")
 public final class AveSignalCellRenderer extends AveSignalEntryPanel implements TableCellRenderer {
 
     private static final class InstanceHolder {

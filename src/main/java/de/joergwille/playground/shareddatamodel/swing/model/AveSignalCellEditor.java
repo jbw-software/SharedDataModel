@@ -26,6 +26,7 @@ import javax.swing.table.TableCellEditor;
  *
  * @author willejoerg
  */
+@SuppressWarnings("serial")
 public class AveSignalCellEditor extends AbstractCellEditor implements TableCellEditor {
 
     private AveSignalEntryPanelWithinTable aveSignalEntryPanel;

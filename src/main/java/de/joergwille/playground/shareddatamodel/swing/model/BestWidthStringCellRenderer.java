@@ -23,7 +23,7 @@ public class BestWidthStringCellRenderer extends DefaultTableCellRenderer {
         static final BestWidthStringCellRenderer INSTANCE = new BestWidthStringCellRenderer();
     }
 
-    private BestWidthStringCellRenderer() {
+    protected BestWidthStringCellRenderer() {
         super();
     }
 
